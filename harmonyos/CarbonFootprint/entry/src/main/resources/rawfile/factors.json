@@ -1,0 +1,45 @@
+{
+  "categories": [
+    {
+      "name": "出行",
+      "icon": "🚴",
+      "subTypes": [
+        { "name": "步行", "unit": "km", "factor": 180, "max": 100, "note": "以私家车出行基线核算替代减排" },
+        { "name": "骑行", "unit": "km", "factor": 180, "max": 100, "note": "以私家车出行基线核算替代减排" },
+        { "name": "公交", "unit": "km", "factor": 80, "max": 200, "note": "每km相对私家车减排" },
+        { "name": "地铁", "unit": "km", "factor": 100, "max": 200, "note": "每km相对私家车减排" },
+        { "name": "拼车", "unit": "km", "factor": 50, "max": 300, "note": "每km相对独自驾车减排" },
+        { "name": "私家车", "unit": "km", "factor": 0, "max": 500, "note": "私家车出行不产生减排，仅用于对比记录" }
+      ]
+    },
+    {
+      "name": "节水节电",
+      "icon": "💡",
+      "subTypes": [
+        { "name": "节水", "unit": "L", "factor": 0.3, "max": 2000, "note": "每L节水约减排0.3g" },
+        { "name": "节电", "unit": "kWh", "factor": 785, "max": 500, "note": "每kWh约减排0.785kg" },
+        { "name": "关空调", "unit": "次", "factor": 800, "max": 12, "note": "每关闭1小时约替代1度电" }
+      ]
+    },
+    {
+      "name": "旧物回收",
+      "icon": "♻️",
+      "subTypes": [
+        { "name": "纸类", "unit": "kg", "factor": 1300, "max": 50 },
+        { "name": "塑料", "unit": "kg", "factor": 600, "max": 50 },
+        { "name": "玻璃", "unit": "kg", "factor": 240, "max": 50 },
+        { "name": "衣物", "unit": "kg", "factor": 3300, "max": 50 },
+        { "name": "电子", "unit": "件", "factor": 20000, "max": 10, "note": "按件回收的小型电子产品" }
+      ]
+    },
+    {
+      "name": "光盘行动",
+      "icon": "🍚",
+      "subTypes": [
+        { "name": "早餐", "unit": "次", "factor": 50, "max": 3 },
+        { "name": "午餐", "unit": "次", "factor": 100, "max": 3 },
+        { "name": "晚餐", "unit": "次", "factor": 100, "max": 3 }
+      ]
+    }
+  ]
+}
