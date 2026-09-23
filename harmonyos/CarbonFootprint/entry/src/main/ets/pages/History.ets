@@ -1,7 +1,6 @@
 import promptAction from '@ohos.promptAction';
 import { AppInit } from '../common/AppInit';
 import { Theme } from '../common/Theme';
-import { categoryIcon } from '../common/Constants';
 import { BehaviorRecord } from '../model/Models';
 import { BehaviorRepo } from '../db/Repository';
 import { BehaviorService } from '../service/BehaviorService';
@@ -75,7 +74,7 @@ export struct HistoryView {
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
         Blank()
-        Text('✕')
+        Text('×')
           .fontSize(16)
           .fontColor(Theme.TEXT_SUB)
           .onClick(() => {
@@ -86,7 +85,7 @@ export struct HistoryView {
 
       if (this.selRecord !== null) {
         Row({ space: 10 }) {
-          Text(categoryIcon((this.selRecord as BehaviorRecord).type))
+          Text('·')
             .fontSize(30)
           Column({ space: 4 }) {
             Text((this.selRecord as BehaviorRecord).subType)
@@ -227,13 +226,11 @@ export struct HistoryView {
         ForEach(this.records, (r: BehaviorRecord) => {
           ListItem() {
             Row({ space: 12 }) {
-              Text(categoryIcon(r.type))
-                .fontSize(24)
-                .width(44)
-                .height(44)
-                .textAlign(TextAlign.Center)
-                .backgroundColor(Theme.PRIMARY_BG)
-                .borderRadius(12)
+              Column()
+                .width(3)
+                .height(34)
+                .borderRadius(2)
+                .backgroundColor(Theme.PRIMARY_LIGHT)
               Column({ space: 4 }) {
                 Text(`${r.subType} ${r.value}${r.unit}`)
                   .fontSize(15)
@@ -253,8 +250,9 @@ export struct HistoryView {
             }
             .width('100%')
             .padding(12)
-            .borderRadius(12)
+            .borderRadius(Theme.R_ITEM)
             .backgroundColor(Theme.CARD)
+            .border({ width: 1, color: Theme.DIVIDER })
             .onClick(() => {
               this.selRecord = r;
               this.editNote = r.note;
@@ -276,7 +274,7 @@ export struct HistoryView {
 
       if (this.records.length === 0) {
         EmptyState({
-          icon: '📭',
+          icon: '',
           title: '暂无记录',
           desc: '当前筛选条件下没有低碳行为记录',
           buttonText: '去记录',

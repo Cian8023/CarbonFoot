@@ -24,7 +24,7 @@ export struct BehaviorPicker {
       // 大类切换
       Row({ space: 8 }) {
         ForEach(this.categories, (cat: BehaviorCategory, idx: number) => {
-          Text(`${cat.icon} ${cat.name}`)
+          Text(cat.name)
             .fontSize(14)
             .fontColor(idx === this.catIndex ? '#FFFFFF' : Theme.TEXT)
             .backgroundColor(idx === this.catIndex ? Theme.PRIMARY : Theme.CARD)

@@ -46,16 +46,3 @@ export function gotoTab(index: number): void {
   AppStorage.setOrCreate(Constants.KEY_MAIN_TAB, index);
 }
 
-/** 按大类取图标 */
-export function categoryIcon(type: string): string {
-  if (type === '出行') {
-    return '🚴';
-  } else if (type === '节水节电') {
-    return '💡';
-  } else if (type === '旧物回收') {
-    return '♻️';
-  } else if (type === '光盘行动') {
-    return '🍚';
-  }
-  return '🌿';
-}

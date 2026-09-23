@@ -55,7 +55,7 @@ export struct LineChart {
 
     // 网格与 Y 轴标签
     this.ctx.font = '11px sans-serif';
-    this.ctx.strokeStyle = '#E5EAE5';
+    this.ctx.strokeStyle = 'Theme.DIVIDER';
     this.ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = padT + plotH * i / 4;
@@ -63,7 +63,7 @@ export struct LineChart {
       this.ctx.moveTo(padL, y);
       this.ctx.lineTo(w - padR, y);
       this.ctx.stroke();
-      this.ctx.fillStyle = '#7A8B99';
+      this.ctx.fillStyle = 'Theme.TEXT_TERTIARY';
       this.ctx.textAlign = 'right';
       this.ctx.fillText(fmtValue(maxV * (1 - i / 4)), padL - 6, y + 4);
     }
@@ -75,14 +75,14 @@ export struct LineChart {
     this.ctx.textAlign = 'center';
     const step = Math.max(1, Math.ceil(pts.length / 6));
     for (let i = 0; i < pts.length; i += step) {
-      this.ctx.fillStyle = '#7A8B99';
+      this.ctx.fillStyle = 'Theme.TEXT_TERTIARY';
       this.ctx.fillText(pts[i].label, px(i), h - 10);
     }
 
     // 面积
     const grad = this.ctx.createLinearGradient(0, padT, 0, padT + plotH);
-    grad.addColorStop(0, 'rgba(46,125,50,0.25)');
-    grad.addColorStop(1, 'rgba(46,125,50,0.02)');
+    grad.addColorStop(0, 'rgba(0,185,107,0.2)');
+    grad.addColorStop(1, 'rgba(0,185,107,0.02)');
     this.ctx.fillStyle = grad;
     this.ctx.beginPath();
     this.ctx.moveTo(px(0), padT + plotH);
@@ -155,9 +155,9 @@ export struct PieChart {
     if (total <= 0) {
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      this.ctx.fillStyle = '#E5EAE5';
+      this.ctx.fillStyle = 'Theme.DIVIDER';
       this.ctx.fill();
-      this.ctx.fillStyle = '#7A8B99';
+      this.ctx.fillStyle = 'Theme.TEXT_TERTIARY';
       this.ctx.font = '13px sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.fillText('暂无数据', cx, cy + 5);
@@ -252,7 +252,7 @@ export struct BarChart {
       this.ctx.fillStyle = i === 0 ? Theme.PRIMARY : '#A5D6A7';
       this.ctx.fill();
       // 数值
-      this.ctx.fillStyle = '#7A8B99';
+      this.ctx.fillStyle = 'Theme.TEXT_TERTIARY';
       this.ctx.textAlign = 'left';
       this.ctx.fillText(fmtValue(it.value), padL + bw + 8, y + 4);
     }

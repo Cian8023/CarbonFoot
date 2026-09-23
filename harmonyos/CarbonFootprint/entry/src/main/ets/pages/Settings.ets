@@ -3,6 +3,7 @@ import promptAction from '@ohos.promptAction';
 import { AppInit } from '../common/AppInit';
 import { Constants } from '../common/Constants';
 import { Theme } from '../common/Theme';
+import { AppConfig } from '../common/AppConfig';
 import { BadgeDef, BehaviorRecord } from '../model/Models';
 import { BadgeService } from '../service/BadgeService';
 import { PointsService } from '../service/PointsService';
@@ -21,6 +22,9 @@ export struct MineView {
   @State balance: number = 0;
   @State badgeText: string = '0/0';
   @State streak: number = 0;
+  @State aiKey: string = '';
+  @State aiUrl: string = '';
+  @State inclusiveUrl: string = '';
 
   aboutToAppear(): void {
     this.refresh();
@@ -42,6 +46,9 @@ export struct MineView {
         }
       }
       this.badgeText = `${unlocked}/${badges.length}`;
+      this.aiKey = await AppConfig.getAiApiKey();
+      this.aiUrl = await AppConfig.getAiBaseUrl();
+      this.inclusiveUrl = await AppConfig.getInclusiveBaseUrl();
     } catch (e) {
       console.error('MineView refresh error: ' + JSON.stringify(e));
     }
@@ -99,10 +106,8 @@ export struct MineView {
   }
 
   @Builder
-  menuItem(icon: string, label: string, sub: string, onTap: () => void) {
+  menuItem(label: string, sub: string, onTap: () => void) {
     Row({ space: 12 }) {
-      Text(icon)
-        .fontSize(20)
       Text(label)
         .fontSize(14)
         .fontColor(Theme.TEXT)
@@ -110,8 +115,8 @@ export struct MineView {
       Text(sub)
         .fontSize(12)
         .fontColor(Theme.TEXT_SUB)
-      Text('>')
-        .fontSize(14)
+      Text('›')
+        .fontSize(16)
         .fontColor(Theme.TEXT_SUB)
     }
     .width('100%')
@@ -125,16 +130,18 @@ export struct MineView {
     Scroll() {
       Column({ space: 12 }) {
         // 用户信息
-        Column({ space: 14 }) {
+        Column({ space: 16 }) {
           Row({ space: 14 }) {
             Column() {
-              Text('🌱')
-                .fontSize(30)
+              Text(this.nickname.substring(0, 1))
+                .fontSize(24)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(Theme.PRIMARY)
             }
-            .width(64)
-            .height(64)
-            .borderRadius(32)
-            .backgroundColor('#FFFFFF')
+            .width(56)
+            .height(56)
+            .borderRadius(28)
+            .backgroundColor(Theme.PRIMARY_BG)
             .justifyContent(FlexAlign.Center)
 
             Column({ space: 6 }) {
@@ -157,61 +164,66 @@ export struct MineView {
               } else {
                 Row({ space: 8 }) {
                   Text(this.nickname)
-                    .fontSize(20)
+                    .fontSize(19)
                     .fontWeight(FontWeight.Bold)
-                    .fontColor('#FFFFFF')
-                  Text('✏️')
-                    .fontSize(13)
+                    .fontColor(Theme.TEXT)
+                  Text('编辑')
+                    .fontSize(11)
+                    .fontColor(Theme.PRIMARY)
+                    .border({ width: 1, color: Theme.PRIMARY, radius: 8 })
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                     .onClick(() => {
                       this.nameInput = this.nickname;
                       this.editing = true;
                     })
                 }
               }
-              Text(`连续打卡 ${this.streak} 天 · 地球的绿色伙伴`)
+              Text(`连续打卡 ${this.streak} 天`)
                 .fontSize(12)
-                .fontColor('#C8E6C9')
+                .fontColor(Theme.TEXT_SUB)
             }
             .alignItems(HorizontalAlign.Start)
             .layoutWeight(1)
           }
           .width('100%')
 
+          Divider().color(Theme.DIVIDER)
+
           Row() {
             Column({ space: 4 }) {
               Text(this.totalKg)
-                .fontSize(20)
+                .fontSize(19)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
+                .fontColor(Theme.PRIMARY)
               Text('累计减排(kg)')
                 .fontSize(11)
-                .fontColor('#C8E6C9')
+                .fontColor(Theme.TEXT_SUB)
             }
             .layoutWeight(1)
 
-            Divider().vertical(true).height(30).color('rgba(255,255,255,0.3)')
+            Divider().vertical(true).height(28).color(Theme.DIVIDER)
 
             Column({ space: 4 }) {
               Text('' + this.balance)
-                .fontSize(20)
+                .fontSize(19)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
+                .fontColor(Theme.TEXT)
               Text('碳积分')
                 .fontSize(11)
-                .fontColor('#C8E6C9')
+                .fontColor(Theme.TEXT_SUB)
             }
             .layoutWeight(1)
 
-            Divider().vertical(true).height(30).color('rgba(255,255,255,0.3)')
+            Divider().vertical(true).height(28).color(Theme.DIVIDER)
 
             Column({ space: 4 }) {
               Text(this.badgeText)
-                .fontSize(20)
+                .fontSize(19)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
+                .fontColor(Theme.TEXT)
               Text('徽章')
                 .fontSize(11)
-                .fontColor('#C8E6C9')
+                .fontColor(Theme.TEXT_SUB)
             }
             .layoutWeight(1)
           }
@@ -219,25 +231,26 @@ export struct MineView {
         }
         .width('100%')
         .padding(18)
-        .borderRadius(16)
-        .linearGradient({ angle: 135, colors: [['#43A047', 0], ['#2E7D32', 1]] })
+        .borderRadius(Theme.R_CARD)
+        .backgroundColor(Theme.CARD)
+        .border({ width: 1, color: Theme.DIVIDER })
 
         // 功能入口
         Column() {
-          this.menuItem('🏅', '徽章墙', '查看解锁进度', (): void => {
+          this.menuItem('徽章墙', '查看解锁进度', (): void => {
             router.pushUrl({ url: 'pages/Badges' });
           })
           Divider().color(Theme.DIVIDER)
-          this.menuItem('📚', '双碳科普', '政策·技巧·动态', (): void => {
+          this.menuItem('双碳科普', '政策·技巧·动态', (): void => {
             router.pushUrl({ url: 'pages/Knowledge' });
           })
           Divider().color(Theme.DIVIDER)
-          this.menuItem('🪙', '积分流水', '收支明细', (): void => {
+          this.menuItem('积分流水', '收支明细', (): void => {
             AppStorage.setOrCreate('tasksSegment', 1);
             AppStorage.setOrCreate('mainTab', Constants.TAB_TASKS);
           })
           Divider().color(Theme.DIVIDER)
-          this.menuItem('🌳', '植树证书', '积分兑换', (): void => {
+          this.menuItem('植树证书', '积分兑换', (): void => {
             router.pushUrl({ url: 'pages/Badges' });
           })
         }
@@ -246,10 +259,125 @@ export struct MineView {
         .backgroundColor(Theme.CARD)
         .clip(true)
 
+        // 创新拓展功能
+        Column() {
+          Row({ space: 12 }) {
+            Text('创')
+              .fontSize(12)
+              .fontColor(Theme.PRIMARY)
+              .backgroundColor(Theme.PRIMARY_BG)
+              .borderRadius(4)
+              .padding({ left: 6, right: 6, top: 3, bottom: 3 })
+              .fontSize(18)
+            Text('创新拓展')
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
+          }
+          .width('100%')
+          .padding(14)
+
+          Divider().color(Theme.DIVIDER)
+          this.menuItem('AI 拍照识别录入', '智能识别低碳行为', (): void => {
+            router.pushUrl({ url: 'pages/AiRecognize' });
+          })
+          Divider().color(Theme.DIVIDER)
+          this.menuItem('城市碳普惠平台', '积分互通·权益兑换', (): void => {
+            router.pushUrl({ url: 'pages/Inclusive' });
+          })
+          Divider().color(Theme.DIVIDER)
+          this.menuItem('家庭碳账户', '多端同步·合并统计', (): void => {
+            router.pushUrl({ url: 'pages/Family' });
+          })
+          Divider().color(Theme.DIVIDER)
+          this.menuItem('减排成果分享', '生成分享卡片', (): void => {
+            router.pushUrl({ url: 'pages/ShareCard' });
+          })
+        }
+        .width('100%')
+        .borderRadius(16)
+        .backgroundColor(Theme.CARD)
+        .clip(true)
+
+        // 服务配置
+        Column({ space: 10 }) {
+          Row({ space: 12 }) {
+            Text('配')
+              .fontSize(12)
+              .fontColor(Theme.PRIMARY)
+              .backgroundColor(Theme.PRIMARY_BG)
+              .borderRadius(4)
+              .padding({ left: 6, right: 6, top: 3, bottom: 3 })
+              .fontSize(18)
+            Text('服务配置（联网能力）')
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
+          }
+          .width('100%')
+          .padding({ left: 14, right: 14, top: 14 })
+
+          Text('AI 视觉接口 API Key（留空 = 离线演示识别）')
+            .fontSize(11)
+            .fontColor(Theme.TEXT_SUB)
+            .width('100%')
+          TextInput({ placeholder: 'sk-...', text: this.aiKey })
+            .height(40)
+            .type(InputType.NEW_PASSWORD)
+            .onChange((v: string) => {
+              this.aiKey = v;
+            })
+          Row({ space: 10 }) {
+            TextInput({ placeholder: '视觉接口地址', text: this.aiUrl })
+              .layoutWeight(1)
+              .height(40)
+              .onChange((v: string) => {
+                this.aiUrl = v;
+              })
+            Text('保存')
+              .fontSize(13)
+              .fontColor(Theme.PRIMARY)
+              .onClick(() => {
+                AppConfig.setAiApiKey(this.aiKey.trim());
+                AppConfig.setAiBaseUrl(this.aiUrl.trim());
+                promptAction.showToast({ message: 'AI 服务配置已保存' });
+              })
+          }
+          .width('100%')
+
+          Text('碳普惠平台地址（不可达 = 内置模拟模式）')
+            .fontSize(11)
+            .fontColor(Theme.TEXT_SUB)
+            .width('100%')
+          Row({ space: 10 }) {
+            TextInput({ placeholder: 'http://服务器:端口', text: this.inclusiveUrl })
+              .layoutWeight(1)
+              .height(40)
+              .onChange((v: string) => {
+                this.inclusiveUrl = v;
+              })
+            Text('保存')
+              .fontSize(13)
+              .fontColor(Theme.PRIMARY)
+              .onClick(() => {
+                AppConfig.setInclusiveBaseUrl(this.inclusiveUrl.trim());
+                promptAction.showToast({ message: '碳普惠平台地址已保存' });
+              })
+          }
+          .width('100%')
+        }
+        .width('100%')
+        .padding({ left: 14, right: 14, bottom: 14 })
+        .borderRadius(16)
+        .backgroundColor(Theme.CARD)
+
         // 数据管理
         Column() {
           Row({ space: 12 }) {
-            Text('🗂️')
+            Text('档')
+              .fontSize(12)
+              .fontColor(Theme.PRIMARY)
+              .backgroundColor(Theme.PRIMARY_BG)
+              .borderRadius(4)
+              .padding({ left: 6, right: 6, top: 3, bottom: 3 })
               .fontSize(18)
             Text('本地数据管理')
               .fontSize(14)
@@ -259,15 +387,15 @@ export struct MineView {
           .padding(14)
 
           Divider().color(Theme.DIVIDER)
-          this.menuItem('💾', '一键备份（JSON）', '导出到应用沙箱', (): void => {
+          this.menuItem('一键备份（JSON）', '导出到应用沙箱', (): void => {
             this.doBackup();
           })
           Divider().color(Theme.DIVIDER)
-          this.menuItem('📊', '统计报表（CSV）', '月度减排汇总', (): void => {
+          this.menuItem('统计报表（CSV）', '月度减排汇总', (): void => {
             this.doExportCsv();
           })
           Divider().color(Theme.DIVIDER)
-          this.menuItem('🗑️', '清空所有数据', '不可恢复', (): void => {
+          this.menuItem('清空所有数据', '不可恢复', (): void => {
             this.confirmClear();
           })
         }

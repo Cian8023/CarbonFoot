@@ -1,4 +1,5 @@
 import promptAction from '@ohos.promptAction';
+import router from '@ohos.router';
 import { AppInit } from '../common/AppInit';
 import { Constants, gotoTab } from '../common/Constants';
 import { Theme } from '../common/Theme';
@@ -58,7 +59,7 @@ export struct RecordView {
     if (sub === null || sub.note === undefined) {
       return '';
     }
-    return '💡 ' + sub.note;
+    return sub.note;
   }
 
   private parseValue(): number {
@@ -136,7 +137,7 @@ export struct RecordView {
         this.parseValue(), sub.unit, sub.factor, ts, this.noteText);
       let msg = `记录成功！减排 ${(result.grams / 1000).toFixed(2)} kg，+${result.points} 积分`;
       if (result.newBadges.length > 0) {
-        msg += ` 🎉解锁徽章：${result.newBadges.join('、')}`;
+        msg += ` 解锁徽章：${result.newBadges.join('、')}`;
       }
       promptAction.showToast({ message: msg, duration: 2500 });
       // 重置表单
@@ -156,10 +157,21 @@ export struct RecordView {
   build() {
     Scroll() {
       Column({ space: 14 }) {
-        Text('低碳行为录入')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .width('100%')
+        Row() {
+          Text('低碳行为录入')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+          Blank()
+          Text('拍照识别')
+            .fontSize(13)
+            .fontColor(Theme.PRIMARY)
+            .border({ width: 1, color: Theme.PRIMARY, radius: 14 })
+            .padding({ left: 12, right: 12, top: 5, bottom: 5 })
+            .onClick(() => {
+              router.pushUrl({ url: 'pages/AiRecognize' });
+            })
+        }
+        .width('100%')
 
         // 1. 行为选择
         Column({ space: 12 }) {
@@ -216,34 +228,35 @@ export struct RecordView {
         .backgroundColor(Theme.CARD)
 
         // 3. 实时减排反馈
-        Column({ space: 6 }) {
+        Column({ space: 8 }) {
           Text('预计减排量')
-            .fontSize(13)
-            .fontColor('#C8E6C9')
-          Row({ space: 4 }) {
-            Text(this.estimateG() > 0 ? (this.estimateG() / 1000).toFixed(3) : '0')
-              .fontSize(34)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-            Text('kg CO₂e')
-              .fontSize(13)
-              .fontColor('#C8E6C9')
-              .margin({ bottom: 6 })
+            .fontSize(12)
+            .fontColor(Theme.TEXT_SUB)
+            .width('100%')
+          Row() {
+            Row({ space: 4 }) {
+              Text(this.estimateG() > 0 ? (this.estimateG() / 1000).toFixed(3) : '0.000')
+                .fontSize(34)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Theme.PRIMARY)
+              Text('kg CO₂e')
+                .fontSize(13)
+                .fontColor(Theme.TEXT_SUB)
+                .margin({ bottom: 6 })
+            }
+            .alignItems(VerticalAlign.Bottom)
             Blank()
-            Text(this.estimateG() > 0 ? `≈ +${Math.max(1, Math.floor(this.estimateG() / 100))} 积分` : '输入数值实时计算')
-              .fontSize(13)
-              .fontColor('#FFFFFF')
-              .backgroundColor('rgba(255,255,255,0.2)')
-              .borderRadius(10)
-              .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+            Text(this.estimateG() > 0 ? `预计 +${Math.max(1, Math.floor(this.estimateG() / 100))} 积分` : '输入数值后实时计算')
+              .fontSize(12)
+              .fontColor(Theme.TEXT_SUB)
           }
           .width('100%')
           .alignItems(VerticalAlign.Bottom)
         }
         .width('100%')
         .padding(16)
-        .borderRadius(16)
-        .linearGradient({ angle: 135, colors: [['#43A047', 0], ['#2E7D32', 1]] })
+        .borderRadius(Theme.R_CARD)
+        .backgroundColor(Theme.PRIMARY_BG)
 
         // 4. 时间 + 备注
         Column({ space: 12 }) {
@@ -252,7 +265,10 @@ export struct RecordView {
               .fontSize(14)
               .fontColor(Theme.TEXT)
             Blank()
-            Text(this.timeLabel() + '  修改 >')
+            Text(this.timeLabel())
+              .fontSize(13)
+              .fontColor(Theme.TEXT_SUB)
+            Text('  修改')
               .fontSize(13)
               .fontColor(Theme.PRIMARY)
               .onClick(() => {

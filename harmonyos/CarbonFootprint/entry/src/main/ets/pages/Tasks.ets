@@ -29,7 +29,7 @@ export struct TasksView {
       const awarded: string[] = await TaskService.evaluateAll();
       if (awarded.length > 0 && this.loaded) {
         promptAction.showToast({
-          message: `🎉 完成任务：${awarded.join('、')}，积分已到账`,
+          message: `完成任务：${awarded.join('、')}，积分已到账`,
           duration: 2500
         });
       }
@@ -46,8 +46,6 @@ export struct TasksView {
   taskCard(p: TaskProgress) {
     Column({ space: 8 }) {
       Row({ space: 10 }) {
-        Text(p.done ? '✅' : p.task.period === 'daily' ? '📅' : '🗓️')
-          .fontSize(22)
         Column({ space: 3 }) {
           Row({ space: 8 }) {
             Text(p.task.title)
@@ -57,8 +55,14 @@ export struct TasksView {
               .fontSize(10)
               .fontColor(Theme.PRIMARY)
               .backgroundColor(Theme.PRIMARY_BG)
-              .borderRadius(8)
+              .borderRadius(4)
               .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+            if (p.done) {
+              Text('已完成')
+                .fontSize(10)
+                .fontColor(Theme.TEXT_SUB)
+              Blank()
+            }
           }
           Text(p.task.description)
             .fontSize(12)
@@ -79,9 +83,9 @@ export struct TasksView {
         Progress({ value: p.progress, total: p.target, type: ProgressType.Linear })
           .layoutWeight(1)
           .color(p.done ? Theme.PRIMARY_LIGHT : Theme.PRIMARY)
-        Text(p.done ? '已完成' : `${p.progress}/${p.target}`)
+        Text(p.done ? '已达成' : `${p.progress}/${p.target}`)
           .fontSize(12)
-          .fontColor(p.done ? Theme.PRIMARY : Theme.TEXT_SUB)
+          .fontColor(p.done ? Theme.TEXT_SUB : Theme.TEXT)
           .width(70)
           .textAlign(TextAlign.End)
       }
@@ -89,20 +93,23 @@ export struct TasksView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(14)
+    .borderRadius(Theme.R_CARD)
     .backgroundColor(Theme.CARD)
+    .border({ width: 1, color: Theme.DIVIDER })
   }
 
   @Builder
   flowRow(p: PointsRecord) {
     Row({ space: 10 }) {
-      Text(p.points >= 0 ? '➕' : '➖')
-        .fontSize(20)
-        .width(36)
-        .height(36)
+      Text(p.points >= 0 ? '+' : '−')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(p.points >= 0 ? Theme.PRIMARY : Theme.WARN)
+        .width(28)
+        .height(28)
         .textAlign(TextAlign.Center)
-        .backgroundColor(p.points >= 0 ? Theme.PRIMARY_BG : '#FFF3E0')
-        .borderRadius(10)
+        .backgroundColor(Theme.BG)
+        .borderRadius(14)
       Column({ space: 3 }) {
         Text(p.action)
           .fontSize(13)
@@ -127,8 +134,9 @@ export struct TasksView {
     }
     .width('100%')
     .padding(12)
-    .borderRadius(12)
+    .borderRadius(Theme.R_ITEM)
     .backgroundColor(Theme.CARD)
+    .border({ width: 1, color: Theme.DIVIDER })
   }
 
   build() {
@@ -144,25 +152,28 @@ export struct TasksView {
         Column({ space: 4 }) {
           Text('碳积分余额')
             .fontSize(12)
-            .fontColor('#C8E6C9')
+            .fontColor(Theme.TEXT_SUB)
           Text('' + this.balance)
-            .fontSize(28)
+            .fontSize(30)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#FFFFFF')
+            .fontColor(Theme.PRIMARY)
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
-        Button('🏅 徽章墙 / 植树证书')
+        Button('徽章墙与证书')
           .fontSize(13)
-          .backgroundColor('rgba(255,255,255,0.2)')
+          .fontColor(Theme.PRIMARY)
+          .backgroundColor(Theme.CARD)
+          .border({ width: 1, color: Theme.PRIMARY, radius: 18 })
           .onClick(() => {
             router.pushUrl({ url: 'pages/Badges' });
           })
       }
       .width('100%')
       .padding(16)
-      .borderRadius(16)
-      .linearGradient({ angle: 135, colors: [['#43A047', 0], ['#2E7D32', 1]] })
+      .borderRadius(Theme.R_CARD)
+      .backgroundColor(Theme.CARD)
+      .border({ width: 1, color: Theme.DIVIDER })
       .margin({ left: 14, right: 14 })
 
       // 分段切换
@@ -215,11 +226,11 @@ export struct TasksView {
       }
 
       if (this.segment === 0 && this.tasks.length === 0 && this.loaded) {
-        EmptyState({ icon: '🎯', title: '暂无任务' })
+        EmptyState({ icon: '', title: '暂无任务' })
       }
       if (this.segment === 1 && this.flow.length === 0 && this.loaded) {
         EmptyState({
-          icon: '🪙',
+          icon: '',
           title: '还没有积分流水',
           desc: '记录低碳行为、完成任务、阅读科普都可以获得积分',
           buttonText: '去录入',

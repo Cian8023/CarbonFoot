@@ -81,13 +81,11 @@ struct Knowledge {
         ForEach(this.articles, (a: Article) => {
           ListItem() {
             Row({ space: 12 }) {
-              Text(a.icon)
-                .fontSize(28)
-                .width(54)
-                .height(54)
-                .textAlign(TextAlign.Center)
-                .backgroundColor(Theme.PRIMARY_BG)
-                .borderRadius(12)
+              Column()
+                .width(3)
+                .height(44)
+                .borderRadius(2)
+                .backgroundColor(Theme.PRIMARY_LIGHT)
               Column({ space: 5 }) {
                 Text(a.title)
                   .fontSize(15)
@@ -121,8 +119,9 @@ struct Knowledge {
             }
             .width('100%')
             .padding(12)
-            .borderRadius(14)
+            .borderRadius(Theme.R_ITEM)
             .backgroundColor(Theme.CARD)
+            .border({ width: 1, color: Theme.DIVIDER })
             .onClick(() => {
               router.pushUrl({ url: 'pages/KnowledgeDetail', params: { id: a.id } });
             })

@@ -79,8 +79,11 @@ struct KnowledgeDetail {
         Scroll() {
           Column({ space: 16 }) {
             Row({ space: 10 }) {
-              Text((this.article as Article).icon)
-                .fontSize(34)
+              Column()
+                .width(3)
+                .height(44)
+                .borderRadius(2)
+                .backgroundColor(Theme.PRIMARY_LIGHT)
               Column({ space: 6 }) {
                 Text((this.article as Article).title)
                   .fontSize(20)
@@ -116,7 +119,7 @@ struct KnowledgeDetail {
           this.reachedEnd = true;
         })
 
-        Button(this.alreadyRead ? '已领取阅读积分 ✓' :
+        Button(this.alreadyRead ? '已领取阅读积分' :
           this.reachedEnd ? '完成阅读，领 5 积分' : '继续阅读到底部可领积分…')
           .width('90%')
           .height(44)
@@ -129,8 +132,8 @@ struct KnowledgeDetail {
           })
       } else {
         Column({ space: 10 }) {
-          Text('😕')
-            .fontSize(48)
+          Text('未找到该文章')
+            .fontSize(14)
           Text('文章不存在')
             .fontSize(14)
             .fontColor(Theme.TEXT_SUB)

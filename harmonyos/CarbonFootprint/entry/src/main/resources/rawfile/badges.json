@@ -3,7 +3,7 @@
     {
       "code": "b_first",
       "name": "初次减碳",
-      "icon": "🌱",
+      "icon": "初",
       "conditionType": "record_count",
       "conditionValue": 1,
       "description": "记录第一笔低碳行为"
@@ -11,7 +11,7 @@
     {
       "code": "b_10kg",
       "name": "减排新兵",
-      "icon": "🥉",
+      "icon": "兵",
       "conditionType": "reduction_total",
       "conditionValue": 10000,
       "description": "累计减排达到 10kg CO₂e"
@@ -19,7 +19,7 @@
     {
       "code": "b_50kg",
       "name": "绿色达人",
-      "icon": "🥈",
+      "icon": "达",
       "conditionType": "reduction_total",
       "conditionValue": 50000,
       "description": "累计减排达到 50kg CO₂e"
@@ -27,7 +27,7 @@
     {
       "code": "b_100kg",
       "name": "低碳先锋",
-      "icon": "🥇",
+      "icon": "锋",
       "conditionType": "reduction_total",
       "conditionValue": 100000,
       "description": "累计减排达到 100kg CO₂e"
@@ -35,7 +35,7 @@
     {
       "code": "b_streak_7",
       "name": "七日之约",
-      "icon": "🔥",
+      "icon": "恒",
       "conditionType": "streak_days",
       "conditionValue": 7,
       "description": "连续 7 天打卡低碳行为"
@@ -43,7 +43,7 @@
     {
       "code": "b_streak_30",
       "name": "坚持不懈",
-      "icon": "💎",
+      "icon": "毅",
       "conditionType": "streak_days",
       "conditionValue": 30,
       "description": "连续 30 天打卡低碳行为"
@@ -51,7 +51,7 @@
     {
       "code": "b_points_500",
       "name": "积分小能手",
-      "icon": "⭐",
+      "icon": "积",
       "conditionType": "points_total",
       "conditionValue": 500,
       "description": "累计获得 500 积分"
@@ -59,7 +59,7 @@
     {
       "code": "b_task_10",
       "name": "任务达人",
-      "icon": "🎯",
+      "icon": "任",
       "conditionType": "tasks_done",
       "conditionValue": 10,
       "description": "累计完成 10 次低碳任务"
@@ -67,7 +67,7 @@
     {
       "code": "b_read_10",
       "name": "博学环保人",
-      "icon": "📚",
+      "icon": "学",
       "conditionType": "articles_read",
       "conditionValue": 10,
       "description": "阅读 10 篇双碳科普文章"

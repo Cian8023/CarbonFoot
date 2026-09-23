@@ -81,7 +81,7 @@ struct Badges {
       await PointsService.addPoints('exchange', 0, '兑换电子植树证书', -Constants.CERT_COST);
       await PrefsService.setCertDate(Date.now());
       bumpTick();
-      promptAction.showToast({ message: '🌱 恭喜获得植树证书！' });
+      promptAction.showToast({ message: '恭喜获得植树证书！' });
     } catch (e) {
       promptAction.showToast({ message: '兑换失败，请重试' });
     }
@@ -98,11 +98,10 @@ struct Badges {
     this.certCtx.fillStyle = '#F7F5EC';
     this.certCtx.fillRect(0, 0, w, h);
     // 双边框
-    this.certCtx.strokeStyle = Theme.PRIMARY;
-    this.certCtx.lineWidth = 4;
-    this.certCtx.strokeRect(10, 10, w - 20, h - 20);
-    this.certCtx.lineWidth = 1.5;
-    this.certCtx.strokeRect(18, 18, w - 36, h - 36);
+    // 单层细边框
+    this.certCtx.strokeStyle = '#C9D5BC';
+    this.certCtx.lineWidth = 1;
+    this.certCtx.strokeRect(12, 12, w - 24, h - 24);
     this.certCtx.textAlign = 'center';
     // 标题
     this.certCtx.fillStyle = Theme.PRIMARY;
@@ -123,9 +122,21 @@ struct Badges {
     this.certCtx.fillText(`通过「碳足迹」应用累计减排 ${this.totalKg} kg CO₂e`, w / 2, 200);
     this.certCtx.fillText(`于 ${DateUtil.formatYMD(this.certDate)} 兑换电子植树证书一份`, w / 2, 224);
     this.certCtx.fillText('感谢您为地球增添的一抹绿色', w / 2, 248);
-    // 装饰
-    this.certCtx.font = '22px sans-serif';
-    this.certCtx.fillText('🌳 🌳 🌳', w / 2, 292);
+    // 装饰：三棵几何小树
+    const treeXs = [w / 2 - 44, w / 2, w / 2 + 44];
+    for (let i = 0; i < treeXs.length; i++) {
+      const cx = treeXs[i];
+      const scale = i === 1 ? 1.15 : 0.85;
+      this.certCtx.fillStyle = '#A9C08F';
+      this.certCtx.beginPath();
+      this.certCtx.moveTo(cx, 292 - 30 * scale);
+      this.certCtx.lineTo(cx - 14 * scale, 292 - 2);
+      this.certCtx.lineTo(cx + 14 * scale, 292 - 2);
+      this.certCtx.closePath();
+      this.certCtx.fill();
+      this.certCtx.fillStyle = '#C8B26A';
+      this.certCtx.fillRect(cx - 2, 292 - 2, 4, 8);
+    }
     // 落款
     this.certCtx.font = '12px sans-serif';
     this.certCtx.fillStyle = '#8A8A6A';
@@ -154,134 +165,265 @@ struct Badges {
   }
 
   build() {
-    Column({ space: 12 }) {
+    Column() {
+      // 顶部导航
       Row() {
-        Text('←')
-          .fontSize(22)
+        Text('‹')
+          .fontSize(30)
+          .fontColor(Theme.TEXT)
+          .width(32)
+          .height(32)
+          .textAlign(TextAlign.Center)
           .onClick(() => {
             router.back();
           })
-        Blank()
-        Text('徽章墙与植树证书')
+
+        Text('徽章与证书')
           .fontSize(18)
-          .fontWeight(FontWeight.Bold)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(Theme.TEXT)
+          .margin({ left: 8 })
+
         Blank()
-        Text('')
-          .width(22)
+
+        Text(`${this.unlockedCount}/${this.badges.length}`)
+          .fontSize(12)
+          .fontColor(Theme.TEXT_SUB)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .height(52)
+      .padding({ left: 14, right: 14 })
+      .border({ width: { bottom: 1 }, color: Theme.DIVIDER })
 
       Scroll() {
-        Column({ space: 12 }) {
-          // 徽章墙
-          Column({ space: 10 }) {
+        Column({ space: 20 }) {
+          // 徽章区域
+          Column({ space: 14 }) {
             Row() {
-              Text('虚拟徽章墙')
-                .fontSize(15)
-                .fontWeight(FontWeight.Medium)
+              Column({ space: 4 }) {
+                Text('我的徽章')
+                  .fontSize(17)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(Theme.TEXT)
+
+                Text('记录已经完成的绿色行动')
+                  .fontSize(12)
+                  .fontColor(Theme.TEXT_SUB)
+              }
+
               Blank()
-              Text(`${this.unlockedCount}/${this.badges.length} 已解锁`)
+
+              Text(`${this.unlockedCount} 个已获得`)
                 .fontSize(12)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.PRIMARY)
             }
             .width('100%')
+            .alignItems(VerticalAlign.Bottom)
 
-            Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
+            Divider()
+              .strokeWidth(1)
+              .color(Theme.DIVIDER)
+
+            Flex({
+              wrap: FlexWrap.Wrap,
+              justifyContent: FlexAlign.SpaceBetween
+            }) {
               ForEach(this.badges, (b: BadgeDef) => {
-                Column({ space: 6 }) {
-                  Text(b.unlocked ? b.icon : '🔒')
-                    .fontSize(34)
+                Column({ space: 7 }) {
+                  Row() {
+                    Text(b.unlocked ? b.icon : '—')
+                      .fontSize(18)
+                      .fontWeight(FontWeight.Medium)
+                      .fontColor(b.unlocked ? Theme.PRIMARY : Theme.TEXT_SUB)
+                      .width(38)
+                      .height(38)
+                      .textAlign(TextAlign.Center)
+                      .backgroundColor(b.unlocked ? '#EAF1E3' : '#F1F1ED')
+                      .borderRadius(6)
+
+                    Blank()
+
+                    if (b.unlocked) {
+                      Text('已获得')
+                        .fontSize(10)
+                        .fontColor(Theme.PRIMARY)
+                    }
+                  }
+                  .width('100%')
+
                   Text(b.name)
-                    .fontSize(13)
+                    .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .fontColor(b.unlocked ? Theme.TEXT : Theme.TEXT_SUB)
+                    .width('100%')
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+
                   Text(b.description)
-                    .fontSize(10)
+                    .fontSize(11)
+                    .lineHeight(16)
                     .fontColor(Theme.TEXT_SUB)
-                    .textAlign(TextAlign.Center)
+                    .width('100%')
                     .maxLines(2)
+
                   if (b.unlocked) {
-                    Text(`${DateUtil.formatYMD(b.unlockedAt)} 解锁`)
-                      .fontSize(9)
-                      .fontColor(Theme.PRIMARY)
+                    Text(DateUtil.formatYMD(b.unlockedAt))
+                      .fontSize(10)
+                      .fontColor(Theme.TEXT_SUB)
+                      .width('100%')
+                  } else {
+                    Text('尚未获得')
+                      .fontSize(10)
+                      .fontColor(Theme.TEXT_SUB)
+                      .width('100%')
                   }
                 }
-                .width('31%')
+                .width('48%')
+                .height(132)
+                .padding(12)
                 .margin({ bottom: 10 })
-                .padding({ top: 14, bottom: 12 })
-                .borderRadius(12)
-                .backgroundColor(b.unlocked ? '#FFF8E1' : Theme.BG)
-                .border({ width: 1, color: b.unlocked ? '#FFE082' : Theme.DIVIDER })
-                .opacity(b.unlocked ? 1 : 0.75)
+                .backgroundColor(b.unlocked ? '#FBFCF8' : '#F7F7F4')
+                .border({
+                  width: 1,
+                  color: b.unlocked ? '#DCE6D2' : Theme.DIVIDER
+                })
+                .borderRadius(6)
+                .opacity(b.unlocked ? 1 : 0.72)
               }, (b: BadgeDef) => b.code + '_' + (b.unlocked ? '1' : '0'))
             }
             .width('100%')
           }
           .width('100%')
-          .padding(14)
-          .borderRadius(16)
+          .padding({ left: 16, right: 16, top: 16, bottom: 6 })
           .backgroundColor(Theme.CARD)
 
-          // 植树证书
-          Column({ space: 12 }) {
+          // 证书区域
+          Column({ space: 14 }) {
             Row() {
-              Text('植树证书')
-                .fontSize(15)
-                .fontWeight(FontWeight.Medium)
+              Column({ space: 4 }) {
+                Text('植树证书')
+                  .fontSize(17)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(Theme.TEXT)
+
+                Text(this.certDate > 0 ? '感谢你为环境持续留下行动记录' : '用积分兑换一份电子纪念')
+                  .fontSize(12)
+                  .fontColor(Theme.TEXT_SUB)
+              }
+
               Blank()
-              Text(`${this.balance}/${Constants.CERT_COST} 积分`)
+
+              Text(`${this.balance} / ${Constants.CERT_COST}`)
                 .fontSize(12)
-                .fontColor(this.balance >= Constants.CERT_COST ? Theme.PRIMARY : Theme.TEXT_SUB)
+                .fontColor(this.balance >= Constants.CERT_COST
+                  ? Theme.PRIMARY
+                  : Theme.TEXT_SUB)
             }
             .width('100%')
+            .alignItems(VerticalAlign.Bottom)
+
+            Divider()
+              .strokeWidth(1)
+              .color(Theme.DIVIDER)
 
             if (this.certDate > 0) {
               Canvas(this.certCtx)
                 .width('100%')
                 .height(330)
-                .borderRadius(8)
+                .borderRadius(4)
                 .onReady(() => {
                   this.drawCert();
                 })
 
-              Button('保存证书图片')
-                .width('100%')
-                .height(42)
-                .fontSize(14)
-                .backgroundColor(Theme.PRIMARY)
-                .onClick(() => {
-                  this.saveCert();
-                })
-            } else {
-              Column({ space: 10 }) {
-                Text('🌲')
-                  .fontSize(48)
-                Text(`积分达到 ${Constants.CERT_COST} 分，即可兑换电子植树证书`)
-                  .fontSize(13)
+              Row() {
+                Text(`兑换于 ${DateUtil.formatYMD(this.certDate)}`)
+                  .fontSize(12)
                   .fontColor(Theme.TEXT_SUB)
-                  .textAlign(TextAlign.Center)
-                Progress({ value: Math.min(this.balance, Constants.CERT_COST), total: Constants.CERT_COST, type: ProgressType.Linear })
-                  .width('80%')
+
+                Blank()
+
+                Button('保存图片')
+                  .height(36)
+                  .fontSize(13)
+                  .fontColor(Theme.PRIMARY)
+                  .backgroundColor('#EAF1E3')
+                  .borderRadius(4)
+                  .onClick(() => {
+                    this.saveCert();
+                  })
+              }
+              .width('100%')
+            } else {
+              Column({ space: 14 }) {
+                Row() {
+                  Text('证')
+                    .fontSize(18)
+                    .fontWeight(FontWeight.Medium)
+                    .fontColor(Theme.PRIMARY)
+                    .width(44)
+                    .height(44)
+                    .textAlign(TextAlign.Center)
+                    .backgroundColor('#EAF1E3')
+                    .borderRadius(6)
+
+                  Column({ space: 5 }) {
+                    Text('电子植树证书')
+                      .fontSize(14)
+                      .fontWeight(FontWeight.Medium)
+                      .fontColor(Theme.TEXT)
+
+                    Text(`还需 ${Math.max(Constants.CERT_COST - this.balance, 0)} 积分`)
+                      .fontSize(12)
+                      .fontColor(Theme.TEXT_SUB)
+                  }
+                  .margin({ left: 12 })
+
+                  Blank()
+                }
+                .width('100%')
+
+                Progress({
+                  value: Math.min(this.balance, Constants.CERT_COST),
+                  total: Constants.CERT_COST,
+                  type: ProgressType.Linear
+                })
+                  .width('100%')
                   .color(Theme.PRIMARY)
-                Button(this.balance >= Constants.CERT_COST ? '立即兑换' : '继续攒积分')
+
+                Row() {
+                  Text(`当前 ${this.balance} 分`)
+                    .fontSize(11)
+                    .fontColor(Theme.TEXT_SUB)
+
+                  Blank()
+
+                  Text(`目标 ${Constants.CERT_COST} 分`)
+                    .fontSize(11)
+                    .fontColor(Theme.TEXT_SUB)
+                }
+                .width('100%')
+
+                Button(this.balance >= Constants.CERT_COST ? '兑换证书' : '继续积累积分')
+                  .width('100%')
+                  .height(40)
                   .fontSize(14)
-                  .backgroundColor(this.balance >= Constants.CERT_COST ? Theme.PRIMARY : Theme.TEXT_SUB)
+                  .fontColor(this.balance >= Constants.CERT_COST ? '#FFFFFF' : Theme.TEXT_SUB)
+                  .backgroundColor(this.balance >= Constants.CERT_COST ? Theme.PRIMARY : '#E6E6E1')
+                  .borderRadius(4)
                   .onClick(() => {
                     this.exchangeCert();
                   })
               }
               .width('100%')
-              .padding({ top: 20, bottom: 20 })
+              .padding({ top: 12, bottom: 8 })
             }
           }
           .width('100%')
-          .padding(14)
-          .borderRadius(16)
+          .padding(16)
           .backgroundColor(Theme.CARD)
         }
         .width('100%')
-        .padding(14)
+        .padding({ top: 14, bottom: 24 })
       }
       .scrollBar(BarState.Off)
       .layoutWeight(1)

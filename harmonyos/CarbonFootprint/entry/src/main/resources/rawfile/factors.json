@@ -2,7 +2,7 @@
   "categories": [
     {
       "name": "出行",
-      "icon": "🚴",
+      "icon": "",
       "subTypes": [
         { "name": "步行", "unit": "km", "factor": 180, "max": 100, "note": "以私家车出行基线核算替代减排" },
         { "name": "骑行", "unit": "km", "factor": 180, "max": 100, "note": "以私家车出行基线核算替代减排" },
@@ -14,7 +14,7 @@
     },
     {
       "name": "节水节电",
-      "icon": "💡",
+      "icon": "",
       "subTypes": [
         { "name": "节水", "unit": "L", "factor": 0.3, "max": 2000, "note": "每L节水约减排0.3g" },
         { "name": "节电", "unit": "kWh", "factor": 785, "max": 500, "note": "每kWh约减排0.785kg" },
@@ -23,7 +23,7 @@
     },
     {
       "name": "旧物回收",
-      "icon": "♻️",
+      "icon": "",
       "subTypes": [
         { "name": "纸类", "unit": "kg", "factor": 1300, "max": 50 },
         { "name": "塑料", "unit": "kg", "factor": 600, "max": 50 },
@@ -34,7 +34,7 @@
     },
     {
       "name": "光盘行动",
-      "icon": "🍚",
+      "icon": "",
       "subTypes": [
         { "name": "早餐", "unit": "次", "factor": 50, "max": 3 },
         { "name": "午餐", "unit": "次", "factor": 100, "max": 3 },

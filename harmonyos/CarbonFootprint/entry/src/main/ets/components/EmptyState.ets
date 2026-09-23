@@ -1,6 +1,6 @@
 @Component
 export struct EmptyState {
-  icon: string = '🌱';
+  icon: string = '';
   title: string = '暂无数据';
   desc: string = '';
   buttonText: string = '';
@@ -8,8 +8,10 @@ export struct EmptyState {
 
   build() {
     Column({ space: 12 }) {
-      Text(this.icon)
-        .fontSize(52)
+      if (this.icon !== '') {
+        Text(this.icon)
+          .fontSize(52)
+      }
       Text(this.title)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
