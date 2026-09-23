@@ -162,7 +162,7 @@ struct ShareCard {
 
         Text('卡片保存后可发送到微信朋友圈 / 家人群，带动更多人参与低碳生活')
           .fontSize(11)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
           .padding({ left: 30, right: 30 })
       }

@@ -85,7 +85,7 @@ struct Knowledge {
                 .width(3)
                 .height(44)
                 .borderRadius(2)
-                .backgroundColor(Theme.PRIMARY_LIGHT)
+                .backgroundColor(Theme.PRIMARY_HOVER)
               Column({ space: 5 }) {
                 Text(a.title)
                   .fontSize(15)
@@ -93,7 +93,7 @@ struct Knowledge {
                   .maxLines(2)
                 Text(a.summary)
                   .fontSize(12)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
                   .maxLines(2)
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Row({ space: 8 }) {
@@ -106,7 +106,7 @@ struct Knowledge {
                   if (this.isRead(a.id)) {
                     Text('已读 +5 分')
                       .fontSize(10)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                   } else {
                     Text('阅读得 5 分 >')
                       .fontSize(10)
@@ -119,7 +119,7 @@ struct Knowledge {
             }
             .width('100%')
             .padding(12)
-            .borderRadius(Theme.R_ITEM)
+            .borderRadius(Theme.R_SMALL)
             .backgroundColor(Theme.CARD)
             .border({ width: 1, color: Theme.DIVIDER })
             .onClick(() => {

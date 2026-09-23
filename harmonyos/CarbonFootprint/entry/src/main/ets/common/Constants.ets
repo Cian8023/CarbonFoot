@@ -23,16 +23,16 @@ export class Constants {
   static readonly KEY_TASKS_SEGMENT: string = 'tasksSegment';
   static readonly KEY_TICK: string = 'tick';
 
-  // 饼图各分类固定配色（与 Theme.PIE_COLORS 对应）
+  // 饼图各分类固定配色（与 Theme.CHART_COLORS 对应）
   private static readonly CATEGORY_ORDER: string[] = ['出行', '节水节电', '旧物回收', '光盘行动'];
 
   /** 按大类取饼图配色 */
   static categoryColor(type: string): string {
     const idx = Constants.CATEGORY_ORDER.indexOf(type);
-    if (idx >= 0 && idx < Theme.PIE_COLORS.length) {
-      return Theme.PIE_COLORS[idx];
+    if (idx >= 0 && idx < Theme.CHART_COLORS.length) {
+      return Theme.CHART_COLORS[idx];
     }
-    return Theme.PRIMARY_LIGHT;
+    return Theme.PRIMARY_HOVER;
   }
 }
 

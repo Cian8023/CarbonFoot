@@ -106,7 +106,7 @@ struct Family {
                 .fontWeight(FontWeight.Medium)
               Text('家人各记各的，减排自动合并统计。一台设备创建家庭组，其他设备凭邀请码加入（同一华为账号超级终端场景自动同步）。')
                 .fontSize(12)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
                 .textAlign(TextAlign.Center)
               Button('创建家庭组')
                 .fontSize(14)
@@ -125,7 +125,7 @@ struct Family {
               Row() {
                 Text('家庭组邀请码')
                   .fontSize(13)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
                 Blank()
                 Text(this.groupCode)
                   .fontSize(16)
@@ -142,7 +142,7 @@ struct Family {
                     .fontColor(Theme.PRIMARY)
                   Text('家庭累计减排(kg)')
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .layoutWeight(1)
                 Divider().vertical(true).height(30).color(Theme.DIVIDER)
@@ -153,7 +153,7 @@ struct Family {
                     .fontColor(Theme.TEXT)
                   Text('家庭合并积分')
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .layoutWeight(1)
                 Divider().vertical(true).height(30).color(Theme.DIVIDER)
@@ -164,7 +164,7 @@ struct Family {
                     .fontColor(Theme.TEXT)
                   Text('本周减排(kg)')
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .layoutWeight(1)
               }
@@ -172,7 +172,7 @@ struct Family {
             }
             .width('100%')
             .padding(16)
-            .borderRadius(Theme.R_CARD)
+            .borderRadius(Theme.R_MEDIUM)
             .backgroundColor(Theme.CARD)
             .border({ width: 1, color: Theme.DIVIDER })
 
@@ -197,7 +197,7 @@ struct Family {
                   Text(`${idx + 1}`)
                     .fontSize(13)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor(idx < 3 ? Theme.PRIMARY : Theme.TEXT_SUB)
+                    .fontColor(idx < 3 ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
                     .width(30)
                     .textAlign(TextAlign.Center)
                   Column({ space: 3 }) {
@@ -216,7 +216,7 @@ struct Family {
                     }
                     Text(`积分 ${m.balance}`)
                       .fontSize(11)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                   }
                   .alignItems(HorizontalAlign.Start)
                   .layoutWeight(1)
@@ -240,7 +240,7 @@ struct Family {
             Column({ space: 10 }) {
               Text('添加成员（演示：模拟其他设备数据同步到达）')
                 .fontSize(12)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
                 .width('100%')
               Row({ space: 10 }) {
                 TextInput({ placeholder: '输入成员昵称', text: this.newMemberName })
@@ -267,7 +267,7 @@ struct Family {
 
           Text('说明：模拟器不支持分布式组网，页面以演示模式呈现合并统计链路；真机 + 同一华为账号场景可无缝切换为 distributedDataObject 真实同步。')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
         .padding(14)

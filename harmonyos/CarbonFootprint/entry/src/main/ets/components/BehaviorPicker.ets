@@ -1,10 +1,6 @@
 import { BehaviorCategory, SubType } from '../model/Models';
 import { Theme } from '../common/Theme';
 
-/**
- * 行为选择器：大类切换 + 子类型网格选择。
- * 选中结果通过 @Link 同步给宿主页。
- */
 @Component
 export struct BehaviorPicker {
   @Prop categories: BehaviorCategory[] = [];
@@ -12,7 +8,21 @@ export struct BehaviorPicker {
   @Link selSub: string;
   @State catIndex: number = 0;
 
+  aboutToAppear(): void {
+    this.syncCatIndex();
+  }
+
+  private syncCatIndex(): void {
+    for (let i = 0; i < this.categories.length; i++) {
+      if (this.categories[i].name === this.selType) {
+        this.catIndex = i;
+        break;
+      }
+    }
+  }
+
   private subList(): SubType[] {
+    this.syncCatIndex();
     if (this.catIndex < 0 || this.catIndex >= this.categories.length) {
       return [];
     }
@@ -21,7 +31,6 @@ export struct BehaviorPicker {
 
   build() {
     Column({ space: 12 }) {
-      // 大类切换
       Row({ space: 8 }) {
         ForEach(this.categories, (cat: BehaviorCategory, idx: number) => {
           Text(cat.name)
@@ -32,13 +41,16 @@ export struct BehaviorPicker {
             .padding({ left: 12, right: 12, top: 8, bottom: 8 })
             .onClick(() => {
               this.catIndex = idx;
+              this.selType = this.categories[idx].name;
+              if (this.subList().length > 0) {
+                this.selSub = this.subList()[0].name;
+              }
             })
         }, (cat: BehaviorCategory) => cat.name)
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceBetween)
 
-      // 子类型网格
       Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
         ForEach(this.subList(), (sub: SubType) => {
           Text(sub.name)

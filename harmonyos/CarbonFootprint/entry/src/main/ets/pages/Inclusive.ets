@@ -105,7 +105,7 @@ struct Inclusive {
                 .fontWeight(FontWeight.Medium)
               Text(`我的碳积分：${this.balance}`)
                 .fontSize(12)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
             }
             .alignItems(HorizontalAlign.Start)
             .layoutWeight(1)
@@ -139,7 +139,7 @@ struct Inclusive {
                     .fontWeight(FontWeight.Medium)
                   Text(b.desc)
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                     .maxLines(1)
                 }
                 .alignItems(HorizontalAlign.Start)
@@ -147,7 +147,7 @@ struct Inclusive {
                 Button(`${b.cost} 分`)
                   .fontSize(12)
                   .height(32)
-                  .backgroundColor(this.balance >= b.cost ? Theme.PRIMARY : Theme.TEXT_SUB)
+                  .backgroundColor(this.balance >= b.cost ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
                   .onClick(() => {
                     this.doExchange(b);
                   })
@@ -180,7 +180,7 @@ struct Inclusive {
                       .fontWeight(FontWeight.Medium)
                     Text(`${e.from} · ${DateUtil.formatMDHM(e.time)}`)
                       .fontSize(10)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                   }
                   .alignItems(HorizontalAlign.Start)
                   .layoutWeight(1)
@@ -201,7 +201,7 @@ struct Inclusive {
 
           Text('说明：在「我的 > 服务配置」中填入碳普惠平台地址即可对接真实接口（可用 Node.js 起 Mock 服务）；未连通时自动使用内置模拟权益池。')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
         .padding(14)

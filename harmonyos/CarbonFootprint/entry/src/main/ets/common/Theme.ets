@@ -67,4 +67,8 @@ export class Theme {
   // === 背景渐变（柔和） ===
   static readonly BG_GRADIENT_GREEN: string = 'linear-gradient(135deg, #E8FFEA 0%, #F7F8FA 100%)';
   static readonly BG_GRADIENT_BLUE: string = 'linear-gradient(135deg, #E8F7FF 0%, #F7F8FA 100%)';
+  
+  // === 兼容旧令牌别名 ===
+  static readonly REDUCE: string = '#00B96B';
+  static readonly WARN: string = '#FF7D00';
 }

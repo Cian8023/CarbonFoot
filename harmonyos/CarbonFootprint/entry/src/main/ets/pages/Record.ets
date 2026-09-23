@@ -211,11 +211,11 @@ export struct RecordView {
           Row() {
             Text(`上限：${this.maxLabel()} ${this.unitLabel()}`)
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
             Blank()
             Text(this.subNote())
               .fontSize(11)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
               .textAlign(TextAlign.End)
               .maxLines(2)
               .layoutWeight(1)
@@ -231,7 +231,7 @@ export struct RecordView {
         Column({ space: 8 }) {
           Text('预计减排量')
             .fontSize(12)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
             .width('100%')
           Row() {
             Row({ space: 4 }) {
@@ -241,21 +241,21 @@ export struct RecordView {
                 .fontColor(Theme.PRIMARY)
               Text('kg CO₂e')
                 .fontSize(13)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
                 .margin({ bottom: 6 })
             }
             .alignItems(VerticalAlign.Bottom)
             Blank()
             Text(this.estimateG() > 0 ? `预计 +${Math.max(1, Math.floor(this.estimateG() / 100))} 积分` : '输入数值后实时计算')
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
           }
           .width('100%')
           .alignItems(VerticalAlign.Bottom)
         }
         .width('100%')
         .padding(16)
-        .borderRadius(Theme.R_CARD)
+        .borderRadius(Theme.R_MEDIUM)
         .backgroundColor(Theme.PRIMARY_BG)
 
         // 4. 时间 + 备注
@@ -267,7 +267,7 @@ export struct RecordView {
             Blank()
             Text(this.timeLabel())
               .fontSize(13)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
             Text('  修改')
               .fontSize(13)
               .fontColor(Theme.PRIMARY)

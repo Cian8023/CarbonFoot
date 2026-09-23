@@ -24,27 +24,19 @@ struct Index {
   tabsController: TabsController = new TabsController();
 
   onMainTabChanged(): void {
+    // AppStorage 驱动切 Tab（首页快捷入口、提交后跳转等场景）
     this.tabsController.changeIndex(this.mainTab);
   }
 
   @Builder
   tabItem(label: string, index: number) {
-    Column({ space: Theme.SPACE_MINI }) {
+    Column() {
       Text(label)
-        .fontSize(14)
+        .fontSize(13)
         .fontWeight(this.mainTab === index ? FontWeight.Medium : FontWeight.Normal)
         .fontColor(this.mainTab === index ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
-      
-      if (this.mainTab === index) {
-        Divider()
-          .width(20)
-          .height(3)
-          .color(Theme.PRIMARY)
-          .borderRadius(2)
-      }
     }
     .width('100%')
-    .height(48)
     .justifyContent(FlexAlign.Center)
   }
 
@@ -76,8 +68,7 @@ struct Index {
       .tabBar(this.tabItem('我的', Constants.TAB_MINE))
     }
     .scrollable(false)
-    .barHeight(56)
-    .barBackgroundColor(Theme.CARD)
+    .barHeight(50)
     .backgroundColor(Theme.BG)
     .onChange((index: number) => {
       this.mainTab = index;
@@ -90,7 +81,6 @@ struct HomeView {
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State loading: boolean = true;
   @State todayG: number = 0;
-  @State totalG: number = 0;
   @State balance: number = 0;
   @State pending: number = 0;
   @State streak: number = 0;
@@ -111,15 +101,12 @@ struct HomeView {
       const records: BehaviorRecord[] = await BehaviorRepo.all();
       const todayStart = DateUtil.startOfDay(Date.now());
       let todaySum = 0;
-      let totalSum = 0;
       for (const r of records) {
-        totalSum += r.reductionG;
         if (r.createdAt >= todayStart) {
           todaySum += r.reductionG;
         }
       }
       this.todayG = todaySum;
-      this.totalG = totalSum;
       this.balance = await PointsService.getBalance();
       this.pending = await TaskService.pendingCount();
       this.streak = await BadgeService.currentStreak();
@@ -143,128 +130,348 @@ struct HomeView {
   }
 
   @Builder
-  heroCard() {
-    Column() {
-      // 渐变背景的核心数据卡片
-      Column({ space: Theme.SPACE_LARGE }) {
-        Row() {
-          Column({ space: Theme.SPACE_MINI }) {
-            Text('今日减排')
+  statCard() {
+    Column({ space: 14 }) {
+      Row() {
+        Column({ space: 6 }) {
+          Text('今日减排')
+            .fontSize(12)
+            .fontColor(Theme.TEXT_TERTIARY)
+          Row({ space: 4 }) {
+            Text(DateUtil.gramsToKg(this.todayG))
+              .fontSize(38)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Theme.PRIMARY)
+            Text('kg CO₂e')
               .fontSize(13)
-              .fontColor('#FFFFFF')
-              .opacity(0.9)
-            
-            Row({ space: 6 }) {
-              Text(DateUtil.gramsToKg(this.todayG))
-                .fontSize(48)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
-              
-              Text('kg')
-                .fontSize(16)
-                .fontColor('#FFFFFF')
-                .opacity(0.9)
-                .margin({ bottom: 8 })
-            }
-            .alignItems(VerticalAlign.Bottom)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .margin({ bottom: 6 })
           }
-          .alignItems(HorizontalAlign.Start)
-          
-          Blank()
+          .alignItems(VerticalAlign.Bottom)
         }
-        .width('100%')
-        
-        Row({ space: Theme.SPACE_LARGE }) {
-          Column({ space: 4 }) {
-            Text(`${this.streak}`)
-              .fontSize(20)
-              .fontWeight(FontWeight.Medium)
-              .fontColor('#FFFFFF')
-            Text('连续天数')
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+
+        Column({ space: 10 }) {
+          Row({ space: 6 }) {
+            Text('连续打卡')
               .fontSize(11)
-              .fontColor('#FFFFFF')
-              .opacity(0.8)
-          }
-          
-          Divider()
-            .vertical(true)
-            .height(32)
-            .color('#FFFFFF')
-            .opacity(0.3)
-          
-          Column({ space: 4 }) {
-            Text(`${this.balance}`)
-              .fontSize(20)
+              .fontColor(Theme.TEXT_TERTIARY)
+            Text(`${this.streak} 天`)
+              .fontSize(12)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#FFFFFF')
+              .fontColor(Theme.TEXT)
+          }
+          Row({ space: 6 }) {
             Text('碳积分')
               .fontSize(11)
-              .fontColor('#FFFFFF')
-              .opacity(0.8)
-          }
-          
-          Divider()
-            .vertical(true)
-            .height(32)
-            .color('#FFFFFF')
-            .opacity(0.3)
-          
-          Column({ space: 4 }) {
-            Text(DateUtil.gramsToKg(this.totalG))
-              .fontSize(20)
+              .fontColor(Theme.TEXT_TERTIARY)
+            Text(`${this.balance}`)
+              .fontSize(12)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#FFFFFF')
-            Text('累计减排(kg)')
+              .fontColor(Theme.TEXT)
+          }
+          Row({ space: 6 }) {
+            Text('待办任务')
               .fontSize(11)
-              .fontColor('#FFFFFF')
-              .opacity(0.8)
+              .fontColor(Theme.TEXT_TERTIARY)
+            Text(`${this.pending}`)
+              .fontSize(12)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Theme.TEXT)
           }
         }
-        .width('100%')
+        .alignItems(HorizontalAlign.End)
       }
       .width('100%')
-      .padding(Theme.SPACE_XXLARGE)
-      .borderRadius(Theme.R_LARGE)
-      .backgroundImage(Theme.GRADIENT_PRIMARY)
-      .shadow({ radius: 16, color: 'rgba(0, 185, 107, 0.25)', offsetY: 8 })
+      .alignItems(VerticalAlign.Top)
     }
     .width('100%')
+    .padding(18)
+    .borderRadius(Theme.R_MEDIUM)
+    .backgroundColor(Theme.CARD)
+    .border({ width: 1, color: Theme.DIVIDER })
   }
 
   @Builder
-  quickGrid() {
-    Grid() {
-      GridItem() {
-        this.quickItem('录入行为', '记录低碳生活', '#00B96B', () => {
-          AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
-        })
+  quickEntry(icon: string, label: string, sub: string, bgColor: string, action: () => void) {
+    Stack() {
+      Column()
+        .width('100%')
+        .height('100%')
+        .borderRadius(Theme.R_SMALL)
+        .backgroundColor(bgColor)
+        .opacity(0.08)
+
+      Column({ space: 2 }) {
+        Text(icon)
+          .fontSize(18)
+
+        Text(label)
+          .fontSize(13)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(Theme.TEXT)
+
+        Text(sub)
+          .fontSize(10)
+          .fontColor(Theme.TEXT_TERTIARY)
       }
-      
-      GridItem() {
-        this.quickItem('AI 识别', '拍照自动录入', '#3491FA', () => {
-          router.pushUrl({ url: 'pages/AiRecognize' });
-        })
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+    }
+    .layoutWeight(1)
+    .height(78)
+    .borderRadius(Theme.R_SMALL)
+    .backgroundColor(Theme.CARD)
+    .border({ width: 1, color: Theme.DIVIDER })
+    .onClick(() => {
+      action();
+    })
+  }
+
+  build() {
+    Scroll() {
+      Column({ space: 12 }) {
+        this.statCard()
+
+        Row({ space: 5 }) {
+          this.quickEntry('✏️', '行为录入', '记录低碳行为', '#00B96B', (): void => {
+            AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
+          })
+          this.quickEntry('📜', '历史记录', '查询与筛选', '#722ED1', (): void => {
+            AppStorage.setOrCreate('mainTab', Constants.TAB_HISTORY);
+          })
+          this.quickEntry('🎯', '任务中心', '积分与徽章', '#F7BA1E', (): void => {
+            AppStorage.setOrCreate('mainTab', Constants.TAB_TASKS);
+          })
+          this.quickEntry('📚', '双碳科普', '政策与技巧', '#3491FA', (): void => {
+            router.pushUrl({ url: 'pages/Knowledge' });
+          })
+        }
+        .width('100%')
+        // 创新拓展功能入口
+        Row({ space: 5 }) {
+          this.quickEntry('📷', '拍照识别', 'AI 自动录入', '#3491FA', (): void => {
+            router.pushUrl({ url: 'pages/AiRecognize' });
+          })
+          this.quickEntry('🎁', '碳普惠', '积分兑权益', '#FF7D00', (): void => {
+            router.pushUrl({ url: 'pages/Inclusive' });
+          })
+          this.quickEntry('👨‍👩‍👧', '家庭账户', '多端合并', '#14C9C9', (): void => {
+            router.pushUrl({ url: 'pages/Family' });
+          })
+          this.quickEntry('📊', '成果分享', '生成海报', '#722ED1', (): void => {
+            router.pushUrl({ url: 'pages/ShareCard' });
+          })
+        }
+
+        // 趋势折线图
+        Column({ space: 10 }) {
+          Row() {
+            Text('减排趋势')
+              .fontSize(15)
+              .fontWeight(FontWeight.Medium)
+            Blank()
+          }
+          .width('100%')
+
+          Row({ space: 8 }) {
+            ForEach(['day7', 'week8', 'month12', 'year5'], (kind: string) => {
+              Text(StatsService.kindLabel(kind as TrendKind))
+                .fontSize(11)
+                .fontColor(this.trendKind === kind ? '#FFFFFF' : Theme.TEXT_TERTIARY)
+                .backgroundColor(this.trendKind === kind ? Theme.PRIMARY : Theme.BG)
+                .borderRadius(10)
+                .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                .onClick(() => {
+                  this.trendKind = kind as TrendKind;
+                  this.refresh();
+                })
+            }, (kind: string) => kind)
+            Blank()
+          }
+          .width('100%')
+
+          LineChart({ points: this.trend })
+        }
+        .width('100%')
+        .padding(14)
+        .borderRadius(16)
+        .backgroundColor(Theme.CARD)
+        // 分类饼图
+        Column({ space: 10 }) {
+          Text(`${StatsService.kindLabel(this.trendKind)}分类占比`)
+            .fontSize(15)
+            .fontWeight(FontWeight.Medium)
+            .width('100%')
+
+          if (this.pie.length > 0) {
+            Row({ space: 8 }) {
+              PieChart({ items: this.pie })
+                .layoutWeight(1)
+              Column({ space: 8 }) {
+                ForEach(this.pie, (item: PieItem) => {
+                  Row({ space: 6 }) {
+                    Circle({ width: 8, height: 8 }).fill(item.color)
+                    Text(item.name)
+                      .fontSize(12)
+                      .fontColor(Theme.TEXT)
+                    Blank()
+                    Text(`${item.pct.toFixed(0)}%`)
+                      .fontSize(12)
+                      .fontColor(Theme.TEXT_TERTIARY)
+                  }
+                  .width('100%')
+                }, (item: PieItem) => item.name)
+              }
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Center)
+          } else {
+            Column({ space: 12 }) {
+              Text('📊')
+                .fontSize(48)
+                .opacity(0.3)
+              Text('暂无数据')
+                .fontSize(14)
+                .fontColor(Theme.TEXT_SECONDARY)
+              Text('去录入第一笔减排记录吧')
+                .fontSize(12)
+                .fontColor(Theme.TEXT_TERTIARY)
+            }
+            .width('100%')
+            .padding({ top: 20, bottom: 20 })
+          }
+        }
+        .width('100%')
+        .padding(14)
+        .borderRadius(16)
+        .backgroundColor(Theme.CARD)
+
+        // 智能推荐（个性化任务 + 生活建议）
+        if (this.recTasks.length > 0 || this.tips.length > 0) {
+          Column({ space: 10 }) {
+            Row({ space: 6 }) {
+              Text('智能推荐')
+                .fontSize(15)
+                .fontWeight(FontWeight.Medium)
+              Text('基于近 14 天行为习惯')
+                .fontSize(10)
+                .fontColor(Theme.TEXT_TERTIARY)
+              Blank()
+            }
+            .width('100%')
+
+            ForEach(this.recTasks, (p: TaskProgress) => {
+              Row({ space: 10 }) {
+                Text('任务')
+                  .fontSize(9)
+                  .fontColor(Theme.PRIMARY)
+                  .backgroundColor(Theme.PRIMARY_BG)
+                  .borderRadius(4)
+                  .padding({ left: 5, right: 5, top: 2, bottom: 2 })
+                Text(p.task.title)
+                  .fontSize(13)
+                  .fontColor(Theme.TEXT)
+                  .layoutWeight(1)
+                Text(`+${p.task.points} 积分`)
+                  .fontSize(12)
+                  .fontColor(Theme.POINTS)
+              }
+              .width('100%')
+              .padding(10)
+              .borderRadius(Theme.R_SMALL)
+              .backgroundColor(Theme.BG)
+            }, (p: TaskProgress) => 'rec_' + p.task.code)
+
+            ForEach(this.tips, (s: Suggestion) => {
+              Column({ space: 4 }) {
+                Text(s.title)
+                  .fontSize(13)
+                  .fontWeight(FontWeight.Medium)
+                  .width('100%')
+                Text(s.detail)
+                  .fontSize(11)
+                  .fontColor(Theme.TEXT_TERTIARY)
+                  .width('100%')
+              }
+              .alignItems(HorizontalAlign.Start)
+              .width('100%')
+              .padding(10)
+              .borderRadius(10)
+              .backgroundColor(Theme.PRIMARY_BG)
+            }, (s: Suggestion) => s.title)
+          }
+          .width('100%')
+          .padding(14)
+          .borderRadius(16)
+          .backgroundColor(Theme.CARD)
+        }
+
+        // 待完成任务
+        Column({ space: 10 }) {
+          Row() {
+            Text('待完成任务')
+              .fontSize(15)
+              .fontWeight(FontWeight.Medium)
+            Blank()
+            Text('全部 >')
+              .fontSize(12)
+              .fontColor(Theme.PRIMARY)
+              .onClick(() => {
+                AppStorage.setOrCreate('mainTab', Constants.TAB_TASKS);
+              })
+          }
+          .width('100%')
+
+          if (this.pendingTasks.length === 0) {
+            Text('太棒了，本期任务都完成啦')
+              .fontSize(12)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .width('100%')
+          }
+          ForEach(this.pendingTasks, (p: TaskProgress) => {
+            Row({ space: 10 }) {
+              Circle({ width: 6, height: 6 }).fill(Theme.PRIMARY_HOVER)
+              Text(p.task.title)
+                .fontSize(13)
+                .fontColor(Theme.TEXT)
+                .layoutWeight(1)
+              Text(`+${p.task.points} 积分`)
+                .fontSize(12)
+                .fontColor(Theme.POINTS)
+            }
+            .width('100%')
+            .padding(10)
+            .borderRadius(Theme.R_SMALL)
+            .backgroundColor(Theme.BG)
+          }, (p: TaskProgress) => p.task.code)
+        }
+        .width('100%')
+        .padding(14)
+        .borderRadius(16)
+        .backgroundColor(Theme.CARD)
+
+        if (!this.loading && this.todayG === 0) {
+          EmptyState({
+            icon: '',
+            title: '今天还没有低碳记录',
+            desc: '步行、光盘、节电……每一件小事都在改变世界',
+            buttonText: '立即记录',
+            onButton: (): void => {
+              AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
+            }
+          })
+        }
       }
-      
-      GridItem() {
-        this.quickItem('历史记录', '查询与筛选', '#722ED1', () => {
-          AppStorage.setOrCreate('mainTab', Constants.TAB_HISTORY);
-        })
-      }
-      
-      GridItem() {
-        this.quickItem('任务中心', '赚取积分', '#F7BA1E', () => {
-          AppStorage.setOrCreate('mainTab', Constants.TAB_TASKS);
-        })
-      }
-      
-      GridItem() {
-        this.quickItem('碳普惠', '兑换权益', '#FF7D00', () => {
-          router.pushUrl({ url: 'pages/Inclusive' });
-        })
-      }
-      
-      GridItem() {
-        this.quickItem('家庭账户', '多端同步', '#14C9C9', () => {
-          router.pushUrl({ url: 'pages/Family' });
- 
+      .width('100%')
+      .padding(14)
+    }
+    .scrollBar(BarState.Off)
+    .width('100%')
+    .height('100%')
+    .align(Alignment.Top)
+  }
+}

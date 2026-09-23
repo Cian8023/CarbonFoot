@@ -102,8 +102,8 @@ struct AiRecognize {
         Blank()
         Text('设置')
           .fontSize(12)
-          .fontColor(Theme.TEXT_SUB)
-          .border({ width: 1, color: Theme.LINE, radius: 10 })
+          .fontColor(Theme.TEXT_TERTIARY)
+          .border({ width: 1, color: Theme.BORDER, radius: 10 })
           .padding({ left: 8, right: 8, top: 3, bottom: 3 })
           .onClick(() => {
             this.configApiKey();
@@ -130,7 +130,7 @@ struct AiRecognize {
               .fontWeight(FontWeight.Medium)
             Text('AI 自动识别行为类型并估算数值，一键录入减排数据')
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
               .textAlign(TextAlign.Center)
           }
           .width('100%')
@@ -188,7 +188,7 @@ struct AiRecognize {
                     .fontWeight(FontWeight.Medium)
                   Text(`预估数值：${(this.guess as AiGuess).value} ${(this.guess as AiGuess).unit}`)
                     .fontSize(12)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
@@ -207,7 +207,7 @@ struct AiRecognize {
 
               Text((this.guess as AiGuess).raw)
                 .fontSize(10)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
                 .maxLines(2)
 
               Row({ space: 12 }) {
@@ -215,7 +215,7 @@ struct AiRecognize {
                   .layoutWeight(1)
                   .height(42)
                   .fontSize(14)
-                  .backgroundColor(Theme.TEXT_SUB)
+                  .backgroundColor(Theme.TEXT_TERTIARY)
                   .onClick(() => {
                     this.guess = null;
                   })
@@ -238,7 +238,7 @@ struct AiRecognize {
 
           Text('说明：在「我的 > 服务配置」中填入视觉模型 API Key 即可启用在线识别；未配置时使用离线演示识别，链路完整可演示。')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
         .padding(14)

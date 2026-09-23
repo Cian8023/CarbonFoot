@@ -188,7 +188,7 @@ struct Badges {
 
         Text(`${this.unlockedCount}/${this.badges.length}`)
           .fontSize(12)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
       }
       .width('100%')
       .height(52)
@@ -208,7 +208,7 @@ struct Badges {
 
                 Text('记录已经完成的绿色行动')
                   .fontSize(12)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
               }
 
               Blank()
@@ -234,7 +234,7 @@ struct Badges {
                     Text(b.unlocked ? b.icon : '—')
                       .fontSize(18)
                       .fontWeight(FontWeight.Medium)
-                      .fontColor(b.unlocked ? Theme.PRIMARY : Theme.TEXT_SUB)
+                      .fontColor(b.unlocked ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
                       .width(38)
                       .height(38)
                       .textAlign(TextAlign.Center)
@@ -254,7 +254,7 @@ struct Badges {
                   Text(b.name)
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor(b.unlocked ? Theme.TEXT : Theme.TEXT_SUB)
+                    .fontColor(b.unlocked ? Theme.TEXT : Theme.TEXT_TERTIARY)
                     .width('100%')
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -262,19 +262,19 @@ struct Badges {
                   Text(b.description)
                     .fontSize(11)
                     .lineHeight(16)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                     .width('100%')
                     .maxLines(2)
 
                   if (b.unlocked) {
                     Text(DateUtil.formatYMD(b.unlockedAt))
                       .fontSize(10)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                       .width('100%')
                   } else {
                     Text('尚未获得')
                       .fontSize(10)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                       .width('100%')
                   }
                 }
@@ -308,7 +308,7 @@ struct Badges {
 
                 Text(this.certDate > 0 ? '感谢你为环境持续留下行动记录' : '用积分兑换一份电子纪念')
                   .fontSize(12)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
               }
 
               Blank()
@@ -317,7 +317,7 @@ struct Badges {
                 .fontSize(12)
                 .fontColor(this.balance >= Constants.CERT_COST
                   ? Theme.PRIMARY
-                  : Theme.TEXT_SUB)
+                  : Theme.TEXT_TERTIARY)
             }
             .width('100%')
             .alignItems(VerticalAlign.Bottom)
@@ -338,7 +338,7 @@ struct Badges {
               Row() {
                 Text(`兑换于 ${DateUtil.formatYMD(this.certDate)}`)
                   .fontSize(12)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
 
                 Blank()
 
@@ -374,7 +374,7 @@ struct Badges {
 
                     Text(`还需 ${Math.max(Constants.CERT_COST - this.balance, 0)} 积分`)
                       .fontSize(12)
-                      .fontColor(Theme.TEXT_SUB)
+                      .fontColor(Theme.TEXT_TERTIARY)
                   }
                   .margin({ left: 12 })
 
@@ -393,13 +393,13 @@ struct Badges {
                 Row() {
                   Text(`当前 ${this.balance} 分`)
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
 
                   Blank()
 
                   Text(`目标 ${Constants.CERT_COST} 分`)
                     .fontSize(11)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .width('100%')
 
@@ -407,7 +407,7 @@ struct Badges {
                   .width('100%')
                   .height(40)
                   .fontSize(14)
-                  .fontColor(this.balance >= Constants.CERT_COST ? '#FFFFFF' : Theme.TEXT_SUB)
+                  .fontColor(this.balance >= Constants.CERT_COST ? '#FFFFFF' : Theme.TEXT_TERTIARY)
                   .backgroundColor(this.balance >= Constants.CERT_COST ? Theme.PRIMARY : '#E6E6E1')
                   .borderRadius(4)
                   .onClick(() => {

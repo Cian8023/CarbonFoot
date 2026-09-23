@@ -60,13 +60,13 @@ export struct TasksView {
             if (p.done) {
               Text('已完成')
                 .fontSize(10)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
               Blank()
             }
           }
           Text(p.task.description)
             .fontSize(12)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
             .maxLines(2)
         }
         .alignItems(HorizontalAlign.Start)
@@ -82,10 +82,10 @@ export struct TasksView {
       Row({ space: 10 }) {
         Progress({ value: p.progress, total: p.target, type: ProgressType.Linear })
           .layoutWeight(1)
-          .color(p.done ? Theme.PRIMARY_LIGHT : Theme.PRIMARY)
+          .color(p.done ? Theme.PRIMARY_HOVER : Theme.PRIMARY)
         Text(p.done ? '已达成' : `${p.progress}/${p.target}`)
           .fontSize(12)
-          .fontColor(p.done ? Theme.TEXT_SUB : Theme.TEXT)
+          .fontColor(p.done ? Theme.TEXT_TERTIARY : Theme.TEXT)
           .width(70)
           .textAlign(TextAlign.End)
       }
@@ -93,7 +93,7 @@ export struct TasksView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(Theme.R_CARD)
+    .borderRadius(Theme.R_MEDIUM)
     .backgroundColor(Theme.CARD)
     .border({ width: 1, color: Theme.DIVIDER })
   }
@@ -117,7 +117,7 @@ export struct TasksView {
           .maxLines(2)
         Text(`${sourceLabel(p.source)} · ${DateUtil.formatMDHM(p.createdAt)}`)
           .fontSize(11)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
@@ -128,13 +128,13 @@ export struct TasksView {
           .fontColor(p.points >= 0 ? Theme.PRIMARY : Theme.WARN)
         Text(`余额 ${p.balanceAfter}`)
           .fontSize(10)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
       }
       .alignItems(HorizontalAlign.End)
     }
     .width('100%')
     .padding(12)
-    .borderRadius(Theme.R_ITEM)
+    .borderRadius(Theme.R_SMALL)
     .backgroundColor(Theme.CARD)
     .border({ width: 1, color: Theme.DIVIDER })
   }
@@ -152,7 +152,7 @@ export struct TasksView {
         Column({ space: 4 }) {
           Text('碳积分余额')
             .fontSize(12)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
           Text('' + this.balance)
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
@@ -171,7 +171,7 @@ export struct TasksView {
       }
       .width('100%')
       .padding(16)
-      .borderRadius(Theme.R_CARD)
+      .borderRadius(Theme.R_MEDIUM)
       .backgroundColor(Theme.CARD)
       .border({ width: 1, color: Theme.DIVIDER })
       .margin({ left: 14, right: 14 })

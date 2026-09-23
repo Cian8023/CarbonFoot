@@ -76,7 +76,7 @@ export struct HistoryView {
         Blank()
         Text('×')
           .fontSize(16)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
           .onClick(() => {
             this.showSheet = false;
           })
@@ -93,7 +93,7 @@ export struct HistoryView {
               .fontWeight(FontWeight.Medium)
             Text(`${(this.selRecord as BehaviorRecord).type} · ${(this.selRecord as BehaviorRecord).value}${(this.selRecord as BehaviorRecord).unit} × ${(this.selRecord as BehaviorRecord).factor}g`)
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
@@ -106,12 +106,12 @@ export struct HistoryView {
 
         Text(`时间：${DateUtil.formatFull((this.selRecord as BehaviorRecord).createdAt)}`)
           .fontSize(13)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
           .width('100%')
 
         Text(`备注：${(this.selRecord as BehaviorRecord).note !== '' ? (this.selRecord as BehaviorRecord).note : '无'}`)
           .fontSize(13)
-          .fontColor(Theme.TEXT_SUB)
+          .fontColor(Theme.TEXT_TERTIARY)
           .width('100%')
 
         TextInput({ placeholder: '修改备注（≤100字）', text: this.editNote })
@@ -230,14 +230,14 @@ export struct HistoryView {
                 .width(3)
                 .height(34)
                 .borderRadius(2)
-                .backgroundColor(Theme.PRIMARY_LIGHT)
+                .backgroundColor(Theme.PRIMARY_HOVER)
               Column({ space: 4 }) {
                 Text(`${r.subType} ${r.value}${r.unit}`)
                   .fontSize(15)
                   .fontWeight(FontWeight.Medium)
                 Text(DateUtil.formatMDHM(r.createdAt) + (r.note !== '' ? ' · ' + r.note : ''))
                   .fontSize(11)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
                   .maxLines(1)
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
@@ -250,7 +250,7 @@ export struct HistoryView {
             }
             .width('100%')
             .padding(12)
-            .borderRadius(Theme.R_ITEM)
+            .borderRadius(Theme.R_SMALL)
             .backgroundColor(Theme.CARD)
             .border({ width: 1, color: Theme.DIVIDER })
             .onClick(() => {

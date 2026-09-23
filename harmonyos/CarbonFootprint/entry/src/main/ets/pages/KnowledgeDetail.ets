@@ -83,14 +83,14 @@ struct KnowledgeDetail {
                 .width(3)
                 .height(44)
                 .borderRadius(2)
-                .backgroundColor(Theme.PRIMARY_LIGHT)
+                .backgroundColor(Theme.PRIMARY_HOVER)
               Column({ space: 6 }) {
                 Text((this.article as Article).title)
                   .fontSize(20)
                   .fontWeight(FontWeight.Bold)
                 Text(`${(this.article as Article).category} · 双碳科普`)
                   .fontSize(12)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
               }
               .alignItems(HorizontalAlign.Start)
               .layoutWeight(1)
@@ -107,7 +107,7 @@ struct KnowledgeDetail {
 
             Text('— 完 —')
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
               .margin({ top: 10 })
           }
           .width('100%')
@@ -125,8 +125,8 @@ struct KnowledgeDetail {
           .height(44)
           .fontSize(14)
           .margin({ bottom: 12 })
-          .backgroundColor(this.alreadyRead ? Theme.TEXT_SUB :
-            this.reachedEnd ? Theme.PRIMARY : Theme.PRIMARY_LIGHT)
+          .backgroundColor(this.alreadyRead ? Theme.TEXT_TERTIARY :
+            this.reachedEnd ? Theme.PRIMARY : Theme.PRIMARY_HOVER)
           .onClick(() => {
             this.claimReadPoints();
           })
@@ -136,7 +136,7 @@ struct KnowledgeDetail {
             .fontSize(14)
           Text('文章不存在')
             .fontSize(14)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
         .layoutWeight(1)

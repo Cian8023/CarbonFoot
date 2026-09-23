@@ -1,7 +1,7 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import { AppInit } from '../common/AppInit';
-import { Constants } from '../common/Constants';
+import { Constants, bumpTick } from '../common/Constants';
 import { Theme } from '../common/Theme';
 import { AppConfig } from '../common/AppConfig';
 import { BadgeDef, BehaviorRecord } from '../model/Models';
@@ -98,6 +98,7 @@ export struct MineView {
         fontColor: Theme.WARN,
         action: () => {
           ExportService.clearAll();
+          bumpTick();
           promptAction.showToast({ message: '数据已清空' });
           this.refresh();
         }
@@ -114,10 +115,10 @@ export struct MineView {
         .layoutWeight(1)
       Text(sub)
         .fontSize(12)
-        .fontColor(Theme.TEXT_SUB)
+        .fontColor(Theme.TEXT_TERTIARY)
       Text('›')
         .fontSize(16)
-        .fontColor(Theme.TEXT_SUB)
+        .fontColor(Theme.TEXT_TERTIARY)
     }
     .width('100%')
     .padding(14)
@@ -180,7 +181,7 @@ export struct MineView {
               }
               Text(`连续打卡 ${this.streak} 天`)
                 .fontSize(12)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
             }
             .alignItems(HorizontalAlign.Start)
             .layoutWeight(1)
@@ -197,7 +198,7 @@ export struct MineView {
                 .fontColor(Theme.PRIMARY)
               Text('累计减排(kg)')
                 .fontSize(11)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
             }
             .layoutWeight(1)
 
@@ -210,7 +211,7 @@ export struct MineView {
                 .fontColor(Theme.TEXT)
               Text('碳积分')
                 .fontSize(11)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
             }
             .layoutWeight(1)
 
@@ -223,7 +224,7 @@ export struct MineView {
                 .fontColor(Theme.TEXT)
               Text('徽章')
                 .fontSize(11)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
             }
             .layoutWeight(1)
           }
@@ -231,7 +232,7 @@ export struct MineView {
         }
         .width('100%')
         .padding(18)
-        .borderRadius(Theme.R_CARD)
+        .borderRadius(Theme.R_MEDIUM)
         .backgroundColor(Theme.CARD)
         .border({ width: 1, color: Theme.DIVIDER })
 
@@ -317,7 +318,7 @@ export struct MineView {
 
           Text('AI 视觉接口 API Key（留空 = 离线演示识别）')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
             .width('100%')
           TextInput({ placeholder: 'sk-...', text: this.aiKey })
             .height(40)
@@ -345,7 +346,7 @@ export struct MineView {
 
           Text('碳普惠平台地址（不可达 = 内置模拟模式）')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
             .width('100%')
           Row({ space: 10 }) {
             TextInput({ placeholder: 'http://服务器:端口', text: this.inclusiveUrl })
@@ -408,13 +409,13 @@ export struct MineView {
         Column({ space: 6 }) {
           Text(`碳足迹 v${Constants.VERSION}`)
             .fontSize(12)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
           Text('OpenHarmony API 12 · 数据仅存储在本机，不上传云端')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
           Text('减排因子参考生态环境部公开核算方法，仅作生活估算演示')
             .fontSize(11)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
         .padding(10)

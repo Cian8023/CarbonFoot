@@ -34,7 +34,7 @@ struct Index {
       Text(label)
         .fontSize(13)
         .fontWeight(this.mainTab === index ? FontWeight.Medium : FontWeight.Normal)
-        .fontColor(this.mainTab === index ? Theme.PRIMARY : Theme.TEXT_SUB)
+        .fontColor(this.mainTab === index ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
     }
     .width('100%')
     .justifyContent(FlexAlign.Center)
@@ -136,7 +136,7 @@ struct HomeView {
         Column({ space: 6 }) {
           Text('今日减排')
             .fontSize(12)
-            .fontColor(Theme.TEXT_SUB)
+            .fontColor(Theme.TEXT_TERTIARY)
           Row({ space: 4 }) {
             Text(DateUtil.gramsToKg(this.todayG))
               .fontSize(38)
@@ -144,7 +144,7 @@ struct HomeView {
               .fontColor(Theme.PRIMARY)
             Text('kg CO₂e')
               .fontSize(13)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
               .margin({ bottom: 6 })
           }
           .alignItems(VerticalAlign.Bottom)
@@ -156,7 +156,7 @@ struct HomeView {
           Row({ space: 6 }) {
             Text('连续打卡')
               .fontSize(11)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
             Text(`${this.streak} 天`)
               .fontSize(12)
               .fontWeight(FontWeight.Medium)
@@ -165,7 +165,7 @@ struct HomeView {
           Row({ space: 6 }) {
             Text('碳积分')
               .fontSize(11)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
             Text(`${this.balance}`)
               .fontSize(12)
               .fontWeight(FontWeight.Medium)
@@ -174,7 +174,7 @@ struct HomeView {
           Row({ space: 6 }) {
             Text('待办任务')
               .fontSize(11)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
             Text(`${this.pending}`)
               .fontSize(12)
               .fontWeight(FontWeight.Medium)
@@ -188,7 +188,7 @@ struct HomeView {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(Theme.R_CARD)
+    .borderRadius(Theme.R_MEDIUM)
     .backgroundColor(Theme.CARD)
     .border({ width: 1, color: Theme.DIVIDER })
   }
@@ -202,11 +202,11 @@ struct HomeView {
         .fontColor(Theme.TEXT)
       Text(sub)
         .fontSize(10)
-        .fontColor(Theme.TEXT_SUB)
+        .fontColor(Theme.TEXT_TERTIARY)
     }
     .layoutWeight(1)
     .padding({ top: 14, bottom: 14 })
-    .borderRadius(Theme.R_ITEM)
+    .borderRadius(Theme.R_SMALL)
     .backgroundColor(Theme.CARD)
     .border({ width: 1, color: Theme.DIVIDER })
     .onClick(() => {
@@ -266,7 +266,7 @@ struct HomeView {
             ForEach(['day7', 'week8', 'month12', 'year5'], (kind: string) => {
               Text(StatsService.kindLabel(kind as TrendKind))
                 .fontSize(11)
-                .fontColor(this.trendKind === kind ? '#FFFFFF' : Theme.TEXT_SUB)
+                .fontColor(this.trendKind === kind ? '#FFFFFF' : Theme.TEXT_TERTIARY)
                 .backgroundColor(this.trendKind === kind ? Theme.PRIMARY : Theme.BG)
                 .borderRadius(10)
                 .padding({ left: 8, right: 8, top: 3, bottom: 3 })
@@ -305,7 +305,7 @@ struct HomeView {
                   Blank()
                   Text(`${item.pct.toFixed(0)}%`)
                     .fontSize(12)
-                    .fontColor(Theme.TEXT_SUB)
+                    .fontColor(Theme.TEXT_TERTIARY)
                 }
                 .width('100%')
               }, (item: PieItem) => item.name)
@@ -318,7 +318,7 @@ struct HomeView {
           if (this.pie.length === 0) {
             Text('还没有减排记录，去录入一笔吧！')
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
           }
         }
         .width('100%')
@@ -335,7 +335,7 @@ struct HomeView {
                 .fontWeight(FontWeight.Medium)
               Text('基于近 14 天行为习惯')
                 .fontSize(10)
-                .fontColor(Theme.TEXT_SUB)
+                .fontColor(Theme.TEXT_TERTIARY)
               Blank()
             }
             .width('100%')
@@ -358,7 +358,7 @@ struct HomeView {
               }
               .width('100%')
               .padding(10)
-              .borderRadius(Theme.R_ITEM)
+              .borderRadius(Theme.R_SMALL)
               .backgroundColor(Theme.BG)
             }, (p: TaskProgress) => 'rec_' + p.task.code)
 
@@ -370,7 +370,7 @@ struct HomeView {
                   .width('100%')
                 Text(s.detail)
                   .fontSize(11)
-                  .fontColor(Theme.TEXT_SUB)
+                  .fontColor(Theme.TEXT_TERTIARY)
                   .width('100%')
               }
               .alignItems(HorizontalAlign.Start)
@@ -405,12 +405,12 @@ struct HomeView {
           if (this.pendingTasks.length === 0) {
             Text('太棒了，本期任务都完成啦')
               .fontSize(12)
-              .fontColor(Theme.TEXT_SUB)
+              .fontColor(Theme.TEXT_TERTIARY)
               .width('100%')
           }
           ForEach(this.pendingTasks, (p: TaskProgress) => {
             Row({ space: 10 }) {
-              Circle({ width: 6, height: 6 }).fill(Theme.PRIMARY_LIGHT)
+              Circle({ width: 6, height: 6 }).fill(Theme.PRIMARY_HOVER)
               Text(p.task.title)
                 .fontSize(13)
                 .fontColor(Theme.TEXT)
@@ -421,7 +421,7 @@ struct HomeView {
             }
             .width('100%')
             .padding(10)
-            .borderRadius(Theme.R_ITEM)
+            .borderRadius(Theme.R_SMALL)
             .backgroundColor(Theme.BG)
           }, (p: TaskProgress) => p.task.code)
         }
