@@ -38,7 +38,7 @@
       "description": "今日累计节约用电 5 kWh",
       "points": 10,
       "period": "daily",
-      "check": { "subTypes": ["节电", "关空调"], "target": 5, "unit": "kWh", "matchType": "sum" }
+      "check": { "subTypes": ["节电"], "target": 5, "unit": "kWh", "matchType": "sum" }
     },
     {
       "code": "daily_cd_3",
@@ -62,7 +62,7 @@
       "description": "今日完成 1 笔旧物回收（纸类/塑料/玻璃/衣物/电子）",
       "points": 10,
       "period": "daily",
-      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物", "电子"], "target": 1, "unit": "笔", "matchType": "count" }
+      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物"], "target": 1, "unit": "笔", "matchType": "count" }
     },
     {
       "code": "weekly_ride_30km",
@@ -86,7 +86,7 @@
       "description": "本周累计回收旧物 5 公斤",
       "points": 40,
       "period": "weekly",
-      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物", "电子"], "target": 5, "unit": "kg", "matchType": "sum" }
+      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物"], "target": 5, "unit": "kg", "matchType": "sum" }
     },
     {
       "code": "weekly_cd_15",

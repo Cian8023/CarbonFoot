@@ -28,9 +28,13 @@ export class StatsService {
     } else if (kind === 'week8') {
       return DateUtil.startOfWeek(now) - 7 * DateUtil.DAY_MS * 7;
     } else if (kind === 'month12') {
-      return DateUtil.startOfMonth(now - 11 * 31 * DateUtil.DAY_MS);
+      const d = new Date(DateUtil.startOfMonth(now));
+      d.setMonth(d.getMonth() - 11);
+      return d.getTime();
     }
-    return DateUtil.startOfYear(now - 4 * 365 * DateUtil.DAY_MS);
+    const dy = new Date(DateUtil.startOfYear(now));
+    dy.setFullYear(dy.getFullYear() - 4);
+    return dy.getTime();
   }
 
   static trend(records: BehaviorRecord[], kind: TrendKind): ChartPoint[] {
@@ -69,11 +73,16 @@ export class StatsService {
     let cur = bucketStart(now);
     for (let i = 0; i < n; i++) {
       starts.push(cur);
-      cur -= stepMs;
       if (kind === 'month12') {
-        cur = DateUtil.startOfMonth(cur);
+        const d = new Date(cur);
+        d.setDate(0);
+        cur = DateUtil.startOfMonth(d.getTime());
       } else if (kind === 'year5') {
-        cur = DateUtil.startOfYear(cur);
+        const d = new Date(cur);
+        d.setFullYear(d.getFullYear() - 1);
+        cur = DateUtil.startOfYear(d.getTime());
+      } else {
+        cur -= stepMs;
       }
     }
     starts.reverse();
@@ -112,7 +121,7 @@ export class StatsService {
       const prev = totals.get(r.type);
       const v = (prev !== undefined ? prev : 0) + r.reductionG;
       totals.set(r.type, v);
-      sum += v;
+      sum += r.reductionG;
     }
     const items: PieItem[] = [];
     let idx = 0;

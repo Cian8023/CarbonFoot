@@ -2,6 +2,7 @@ import { DBHelper } from '../db/DBHelper';
 import { BehaviorRepo } from '../db/Repository';
 import { PointsService } from './PointsService';
 import { BadgeService } from './BadgeService';
+import { CalculationService } from './CalculationService';
 import { bumpTick } from '../common/Constants';
 import { BehaviorRecord, SubmitResult } from '../model/Models';
 
@@ -23,7 +24,7 @@ export class BehaviorService {
       createdAt: ts,
       note: note
     };
-    const points = grams > 0 ? Math.max(1, Math.floor(grams / 100)) : 0;
+    const points = CalculationService.valueToPoints(grams);
 
     DBHelper.beginTx();
     try {
@@ -51,7 +52,24 @@ export class BehaviorService {
   }
 
   static async deleteById(id: number): Promise<void> {
-    await BehaviorRepo.deleteById(id);
+    // 同一事务内删除记录并冲减该笔行为发放过的积分，保持积分账与减排账一致
+    const rec = await BehaviorRepo.getById(id);
+    if (rec === null) {
+      return;
+    }
+    DBHelper.beginTx();
+    try {
+      await BehaviorRepo.deleteById(id);
+      const points = CalculationService.valueToPoints(rec.reductionG);
+      if (points > 0) {
+        await PointsService.addPointsTx('behavior', id,
+          `删除记录：${rec.subType} ${rec.value}${rec.unit}，冲减积分`, -points);
+      }
+      DBHelper.commitTx();
+    } catch (e) {
+      DBHelper.rollbackTx();
+      throw e as Error;
+    }
     bumpTick();
   }
 

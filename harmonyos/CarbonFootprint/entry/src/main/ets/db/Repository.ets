@@ -70,6 +70,18 @@ export class BehaviorRepo {
   }
 
   /** startTs ~ endTs 区间，可按大类过滤，时间倒序 */
+  static async getById(id: number): Promise<BehaviorRecord | null> {
+    const pred = new relationalStore.RdbPredicates('t_behavior_record');
+    pred.equalTo('id', id);
+    const rs = await DBHelper.get().query(pred);
+    let rec: BehaviorRecord | null = null;
+    if (rs.goToNextRow()) {
+      rec = rowToBehavior(rs);
+    }
+    rs.close();
+    return rec;
+  }
+
   static async query(startTs: number, endTs: number, type: string): Promise<BehaviorRecord[]> {
     const pred = new relationalStore.RdbPredicates('t_behavior_record');
     pred.between('created_at', startTs, endTs).orderByDesc('created_at');
@@ -106,11 +118,14 @@ export class BehaviorRepo {
     return sum;
   }
 
-  static async sumBySubTypes(subTypes: string[], startTs: number, endTs: number): Promise<number> {
+  static async sumBySubTypes(subTypes: string[], startTs: number, endTs: number, unit: string = ''): Promise<number> {
     const pred = new relationalStore.RdbPredicates('t_behavior_record');
     pred.between('created_at', startTs, endTs);
     if (subTypes.length > 0) {
       pred.in('sub_type', subTypes);
+    }
+    if (unit !== '') {
+      pred.equalTo('unit', unit);
     }
     const rs = await DBHelper.get().query(pred);
     let sum = 0;
@@ -265,6 +280,14 @@ export class TaskRepo {
     const exists = rs.rowCount > 0;
     rs.close();
     if (exists) {
+      // 任务定义已存在时同步更新（种子数据修订后可应用到已安装环境）
+      const upd: relationalStore.ValuesBucket = {
+        'title': title,
+        'description': description,
+        'points': points,
+        'check_json': checkJson
+      };
+      await DBHelper.get().update(upd, pred);
       return;
     }
     const bucket: relationalStore.ValuesBucket = {

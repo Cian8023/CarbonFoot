@@ -9,7 +9,7 @@ import { DateUtil } from '../utils/DateUtil';
 import { BarChart, PieItem } from '../components/Chart';
 import { EmptyState } from '../components/EmptyState';
 
-const RANGES: string[] = ['今日', '近7天', '近30天', '全部'];
+const RANGES: string[] = ['全部', '今日', '近7天', '近30天'];
 const TYPES: string[] = ['全部', '出行', '节水节电', '旧物回收', '光盘行动'];
 
 @Component
@@ -33,11 +33,11 @@ export struct HistoryView {
       await AppInit.ensure();
       const now = Date.now();
       let start = 0;
-      if (this.rangeIndex === 0) {
+      if (this.rangeIndex === 1) {
         start = DateUtil.startOfDay(now);
-      } else if (this.rangeIndex === 1) {
-        start = DateUtil.startOfDay(now) - 6 * DateUtil.DAY_MS;
       } else if (this.rangeIndex === 2) {
+        start = DateUtil.startOfDay(now) - 6 * DateUtil.DAY_MS;
+      } else if (this.rangeIndex === 3) {
         start = DateUtil.startOfDay(now) - 29 * DateUtil.DAY_MS;
       }
       this.records = await BehaviorRepo.query(start, now, this.typeFilter);
@@ -197,11 +197,17 @@ export struct HistoryView {
       Column({ space: 10 }) {
         Row({ space: 8 }) {
           ForEach(RANGES, (r: string, idx: number) => {
-            this.chip(r, this.rangeIndex === idx, (): void => {
-              this.rangeIndex = idx;
-              this.refresh();
-            })
-          }, (r: string) => r)
+            Text(r)
+              .fontSize(12)
+              .fontColor(this.rangeIndex === idx ? '#FFFFFF' : Theme.TEXT)
+              .backgroundColor(this.rangeIndex === idx ? Theme.PRIMARY : Theme.CARD)
+              .borderRadius(14)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .onClick(() => {
+                this.rangeIndex = idx;
+                this.refresh();
+              })
+          }, (r: string, idx: number) => idx.toString())
           Blank()
           Text(`合计 ${DateUtil.gramsToKg(this.totalG)} kg`)
             .fontSize(12)
@@ -210,12 +216,18 @@ export struct HistoryView {
         .width('100%')
 
         Row({ space: 8 }) {
-          ForEach(TYPES, (t: string) => {
-            this.chip(t, this.typeFilter === t, (): void => {
-              this.typeFilter = t;
-              this.refresh();
-            })
-          }, (t: string) => t)
+          ForEach(TYPES, (t: string, idx: number) => {
+            Text(t)
+              .fontSize(12)
+              .fontColor(this.typeFilter === t ? '#FFFFFF' : Theme.TEXT)
+              .backgroundColor(this.typeFilter === t ? Theme.PRIMARY : Theme.CARD)
+              .borderRadius(14)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .onClick(() => {
+                this.typeFilter = t;
+                this.refresh();
+              })
+          }, (t: string, idx: number) => idx.toString())
         }
         .width('100%')
       }

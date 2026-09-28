@@ -16,7 +16,7 @@ export class TaskService {
 
   static async progressFor(check: TaskCheck, startTs: number, endTs: number): Promise<number> {
     if (check.matchType === 'sum') {
-      return await BehaviorRepo.sumBySubTypes(check.subTypes, startTs, endTs);
+      return await BehaviorRepo.sumBySubTypes(check.subTypes, startTs, endTs, check.unit);
     }
     return await BehaviorRepo.countBySubTypes(check.subTypes, startTs, endTs);
   }
