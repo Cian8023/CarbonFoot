@@ -1,6 +1,5 @@
 import common from '@ohos.app.ability.common';
 import preferences from '@ohos.data.preferences';
-import util from '@ohos.util';
 import { AppInit } from '../common/AppInit';
 import { BehaviorRepo } from '../db/Repository';
 import { DateUtil } from '../utils/DateUtil';
@@ -26,9 +25,9 @@ export interface MergedStats {
 }
 
 /**
- * 鸿蒙多端数据同步服务（创新拓展 1）：
- * 优先尝试 distributedDataObject 分布式数据对象组网同步；
- * 模拟器/未登录账号等场景自动降级为「家庭组演示模式」，合并统计链路完整可演示。
+ * 家庭碳账户服务（创新拓展 1）：家庭组演示模式。
+ * 单设备上模拟家庭成员数据上报，家庭合并减排、合并积分与成员排行链路完整可演示；
+ * distributedDataObject 真实多端同步预留为后续迭代（tryDistributedSync 当前固定返回 false）。
  */
 export class SyncService {
   private static readonly KEY_GROUP: string = 'family_group';
@@ -77,13 +76,16 @@ export class SyncService {
     return false;
   }
 
-  /** 演示模式：生成虚拟家庭成员的上报数据（模拟分布式数据到达） */
+  /** 演示模式：按昵称哈希生成稳定的虚拟成员数据（同名成员数据一致，重演不穿帮） */
   static async addDemoMember(name: string): Promise<void> {
     const members = await SyncService.listMembers();
-    const totalBase = Math.floor(20000 + Math.random() * 80000);
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = (hash * 31 + name.charCodeAt(i)) % 100000;
+    }
+    const totalBase = 20000 + (hash % 80000);
     const m: FamilyMember = {
-      deviceId: 'demo-' + new util.Base64Helper().encodeToStringSync(
-        new Uint8Array([Date.now() % 255, members.length])).substring(0, 8),
+      deviceId: 'demo-' + hash.toString(16),
       name: name,
       totalG: totalBase,
       balance: Math.floor(totalBase / 100),

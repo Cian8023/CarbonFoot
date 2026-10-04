@@ -8,6 +8,7 @@ import { CalculationService } from '../service/CalculationService';
 import { BehaviorService } from '../service/BehaviorService';
 import { DateUtil } from '../utils/DateUtil';
 import { BehaviorPicker } from '../components/BehaviorPicker';
+import { BadgeUnlockOverlay } from '../components/BadgeUnlock';
 
 @Component
 export struct RecordView {
@@ -19,6 +20,8 @@ export struct RecordView {
   @State noteText: string = '';
   @State customTs: number = 0;
   @State submitting: boolean = false;
+  @State showUnlock: boolean = false;
+  @State unlockBadges: string[] = [];
 
   aboutToAppear(): void {
     this.initData();
@@ -135,11 +138,13 @@ export struct RecordView {
     try {
       const result = await BehaviorService.submit(this.selType, this.selSub,
         this.parseValue(), sub.unit, sub.factor, ts, this.noteText);
-      let msg = `记录成功！减排 ${(result.grams / 1000).toFixed(2)} kg，+${result.points} 积分`;
-      if (result.newBadges.length > 0) {
-        msg += ` 解锁徽章：${result.newBadges.join('、')}`;
-      }
+      const msg = `记录成功！减排 ${(result.grams / 1000).toFixed(2)} kg，+${result.points} 积分`;
       promptAction.showToast({ message: msg, duration: 2500 });
+      if (result.newBadges.length > 0) {
+        // 勋章解锁全屏动画（替代原 Toast 文字提示）
+        this.unlockBadges = result.newBadges;
+        this.showUnlock = true;
+      }
       // 重置表单
       this.valueText = '';
       this.noteText = '';
@@ -155,6 +160,7 @@ export struct RecordView {
   }
 
   build() {
+    Stack() {
     Scroll() {
       Column({ space: 14 }) {
         Row() {
@@ -314,5 +320,16 @@ export struct RecordView {
     .width('100%')
     .height('100%')
     .align(Alignment.Top)
+
+    // 勋章解锁动画层（置顶）
+    if (this.showUnlock) {
+      BadgeUnlockOverlay({
+        badges: this.unlockBadges,
+        onClose: (): void => {
+          this.showUnlock = false;
+        }
+      })
+    }
+    }
   }
 }

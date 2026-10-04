@@ -36,6 +36,8 @@ interface RemoteBenefitResp {
 export class InclusiveService {
   private static benefits: Benefit[] = [];
   private static remoteMode: boolean = false;
+  /** 模拟权益的会话内库存（兑换递减，卖完显示已兑完） */
+  private static stockMap: Map<string, number> = new Map();
 
   /** 拉取可兑换权益（远程优先，失败降级内置 Mock） */
   static async fetchBenefits(): Promise<string> {
@@ -55,6 +57,12 @@ export class InclusiveService {
     }
     InclusiveService.benefits = InclusiveService.mockBenefits();
     InclusiveService.remoteMode = false;
+    for (const b of InclusiveService.benefits) {
+      if (!InclusiveService.stockMap.has(b.id)) {
+        InclusiveService.stockMap.set(b.id, b.stock);
+      }
+      b.stock = InclusiveService.stockMap.get(b.id) as number;
+    }
     return '碳普惠平台未连通，当前为内置模拟模式';
   }
 
@@ -71,6 +79,15 @@ export class InclusiveService {
     const balance = await PointsService.getBalance();
     if (balance < benefit.cost) {
       throw new Error(`积分不足，还差 ${benefit.cost - balance} 分`);
+    }
+    if (!InclusiveService.remoteMode) {
+      const left = InclusiveService.stockMap.get(benefit.id);
+      if (left !== undefined) {
+        if (left <= 0) {
+          throw new Error('该权益已兑完');
+        }
+        InclusiveService.stockMap.set(benefit.id, left - 1);
+      }
     }
     if (InclusiveService.remoteMode) {
       const base = await AppConfig.getInclusiveBaseUrl();

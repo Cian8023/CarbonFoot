@@ -18,6 +18,7 @@ struct Family {
   @State totalPoints: number = 0;
   @State weekG: number = 0;
   @State newMemberName: string = '';
+  @State newInviteCode: string = '';
 
   aboutToAppear(): void {
     this.refresh();
@@ -51,6 +52,10 @@ struct Family {
     const name = this.newMemberName.trim();
     if (name === '') {
       promptAction.showToast({ message: '请输入家庭成员昵称' });
+      return;
+    }
+    if (this.newInviteCode.trim() !== this.groupCode) {
+      promptAction.showToast({ message: '邀请码不匹配，无法并入该家庭组' });
       return;
     }
     // 模拟器无分布式能力：走演示模式（真机同账号场景由分布式数据对象同步）
@@ -104,7 +109,7 @@ struct Family {
               Text('创建家庭碳账户')
                 .fontSize(16)
                 .fontWeight(FontWeight.Medium)
-              Text('家人各记各的，减排自动合并统计。一台设备创建家庭组，其他设备凭邀请码加入（同一华为账号超级终端场景自动同步）。')
+              Text('家人各记各的，减排自动合并统计。一台设备创建家庭组，其他设备输入昵称并入成员（当前为演示模式）。')
                 .fontSize(12)
                 .fontColor(Theme.TEXT_TERTIARY)
                 .textAlign(TextAlign.Center)
@@ -242,6 +247,11 @@ struct Family {
                 .fontSize(12)
                 .fontColor(Theme.TEXT_TERTIARY)
                 .width('100%')
+              TextInput({ placeholder: '输入家庭组邀请码', text: this.newInviteCode })
+                .height(42)
+                .onChange((v: string) => {
+                  this.newInviteCode = v;
+                })
               Row({ space: 10 }) {
                 TextInput({ placeholder: '输入成员昵称', text: this.newMemberName })
                   .layoutWeight(1)
@@ -265,7 +275,7 @@ struct Family {
             .backgroundColor(Theme.CARD)
           }
 
-          Text('说明：模拟器不支持分布式组网，页面以演示模式呈现合并统计链路；真机 + 同一华为账号场景可无缝切换为 distributedDataObject 真实同步。')
+          Text('说明：当前为家庭组演示模式，成员减排与积分数据由本机模拟生成，合并统计与排行链路完整可演示；分布式多端真实同步为后续迭代方向。')
             .fontSize(11)
             .fontColor(Theme.TEXT_TERTIARY)
         }

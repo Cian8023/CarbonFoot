@@ -1,12 +1,13 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import util from '@ohos.util';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import fs from '@ohos.file.fs';
 import { AppInit } from '../common/AppInit';
 import { Constants, bumpTick } from '../common/Constants';
 import { Theme } from '../common/Theme';
 import { BadgeDef } from '../model/Models';
-import { BadgeService } from '../service/BadgeService';
+import { BadgeService, BadgeProgressData } from '../service/BadgeService';
 import { PointsService } from '../service/PointsService';
 import { BehaviorRepo } from '../db/Repository';
 import { PrefsService } from '../common/PrefsService';
@@ -22,6 +23,10 @@ struct Badges {
   @State nickname: string = '绿色生活家';
   @State totalKg: string = '0.00';
   @State unlockedCount: number = 0;
+  @State progressArr: BadgeProgressData[] = [];
+  @State selBadge: BadgeDef | null = null;
+  @State showDetail: boolean = false;
+  @State selProgress: BadgeProgressData | null = null;
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private certCtx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
@@ -44,9 +49,16 @@ struct Badges {
       }
       this.unlockedCount = unlocked;
       this.totalKg = DateUtil.gramsToKg(await BehaviorRepo.sumAllReduction());
+      this.progressArr = await BadgeService.progressList(this.badges);
     } catch (e) {
       console.error('Badges refresh error: ' + JSON.stringify(e));
     }
+  }
+
+  private openBadgeDetail(b: BadgeDef, idx: number): void {
+    this.selBadge = b;
+    this.selProgress = this.progressArr.length > idx ? this.progressArr[idx] : null;
+    this.showDetail = true;
   }
 
   private async exchangeCert(): Promise<void> {
@@ -149,19 +161,82 @@ struct Badges {
       const dataUrl = this.certCtx.toDataURL('image/png', 1.0);
       const b64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
       const buf: Uint8Array = new util.Base64Helper().decodeSync(b64);
-      const ctx = AppInit.getContext();
-      const dir = ctx.filesDir + '/certificates';
-      if (!fs.accessSync(dir)) {
-        fs.mkdirSync(dir, true);
-      }
-      const path = dir + '/tree_certificate_' + DateUtil.formatYMD(Date.now()).replace(/-/g, '') + '.png';
-      const f = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+      const helper = photoAccessHelper.getPhotoAccessHelper(AppInit.getContext());
+      const uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'png');
+      const f = fs.openSync(uri, fs.OpenMode.READ_WRITE | fs.OpenMode.TRUNC);
       fs.writeSync(f.fd, buf.buffer as ArrayBuffer);
       fs.closeSync(f.fd);
-      promptAction.showToast({ message: '证书已保存：' + path, duration: 3000 });
+      promptAction.showToast({ message: '证书已保存到相册', duration: 3000 });
     } catch (e) {
       promptAction.showToast({ message: '保存失败：' + JSON.stringify(e) });
     }
+  }
+
+  @Builder
+  badgeDetailSheet() {
+    Column({ space: 14 }) {
+      Row() {
+        Text('徽章详情')
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+        Blank()
+        Text('×')
+          .fontSize(16)
+          .fontColor(Theme.TEXT_TERTIARY)
+          .onClick(() => {
+            this.showDetail = false;
+          })
+      }
+      .width('100%')
+
+      if (this.selBadge !== null) {
+        Row({ space: 14 }) {
+          Text((this.selBadge as BadgeDef).unlocked ? (this.selBadge as BadgeDef).icon : '—')
+            .fontSize(30)
+            .width(64)
+            .height(64)
+            .textAlign(TextAlign.Center)
+            .backgroundColor((this.selBadge as BadgeDef).unlocked ? '#EAF1E3' : '#F1F1ED')
+            .borderRadius(10)
+          Column({ space: 6 }) {
+            Text((this.selBadge as BadgeDef).name)
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+            Text((this.selBadge as BadgeDef).description)
+              .fontSize(12)
+              .fontColor(Theme.TEXT_TERTIARY)
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+        }
+        .width('100%')
+
+        if ((this.selBadge as BadgeDef).unlocked) {
+          Text('已解锁 · '+ DateUtil.formatFull((this.selBadge as BadgeDef).unlockedAt))
+            .fontSize(13)
+            .fontColor(Theme.PRIMARY)
+            .width('100%')
+        } else if (this.selProgress !== null) {
+          Column({ space: 8 }) {
+            Text('当前进度：' + this.selProgress.label)
+              .fontSize(13)
+              .fontColor(Theme.TEXT)
+              .width('100%')
+            Progress({ value: this.selProgress.pct, total: 100, type: ProgressType.Linear })
+              .width('100%')
+              .height(8)
+              .color(Theme.PRIMARY)
+            Text('完成 '+ (this.selBadge as BadgeDef).description +' 即可解锁')
+              .fontSize(11)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .width('100%')
+          }
+          .width('100%')
+        }
+      }
+    }
+    .width('100%')
+    .padding(16)
   }
 
   build() {
@@ -272,14 +347,21 @@ struct Badges {
                       .fontColor(Theme.TEXT_TERTIARY)
                       .width('100%')
                   } else {
-                    Text('尚未获得')
-                      .fontSize(10)
-                      .fontColor(Theme.TEXT_TERTIARY)
-                      .width('100%')
+                    Column({ space: 4 }) {
+                      Text((this.progressArr.length > 0) ? (this.progressArr[this.badges.indexOf(b)] !== undefined ? this.progressArr[this.badges.indexOf(b)].label : '进度加载中') : '进度加载中')
+                        .fontSize(10)
+                        .fontColor(Theme.TEXT_TERTIARY)
+                        .width('100%')
+                      Progress({ value: (this.progressArr.length > 0 && this.progressArr[this.badges.indexOf(b)] !== undefined) ? this.progressArr[this.badges.indexOf(b)].pct : 0, total: 100, type: ProgressType.Linear })
+                        .width('100%')
+                        .height(6)
+                        .color(Theme.PRIMARY)
+                    }
+                    .width('100%')
                   }
                 }
                 .width('48%')
-                .height(132)
+                .height(150)
                 .padding(12)
                 .margin({ bottom: 10 })
                 .backgroundColor(b.unlocked ? '#FBFCF8' : '#F7F7F4')
@@ -289,7 +371,10 @@ struct Badges {
                 })
                 .borderRadius(6)
                 .opacity(b.unlocked ? 1 : 0.72)
-              }, (b: BadgeDef) => b.code + '_' + (b.unlocked ? '1' : '0'))
+                .onClick(() => {
+                  this.openBadgeDetail(b, this.badges.indexOf(b));
+                })
+              }, (b: BadgeDef) => b.code + '_' + (b.unlocked ? '1' : '0') + '_' + b.unlockedAt)
             }
             .width('100%')
           }
@@ -342,14 +427,18 @@ struct Badges {
 
                 Blank()
 
-                Button('保存图片')
+                SaveButton({ text: SaveDescription.SAVE_IMAGE })
                   .height(36)
                   .fontSize(13)
                   .fontColor(Theme.PRIMARY)
                   .backgroundColor('#EAF1E3')
                   .borderRadius(4)
-                  .onClick(() => {
-                    this.saveCert();
+                  .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+                    if (result === SaveButtonOnClickResult.SUCCESS) {
+                      await this.saveCert();
+                    } else {
+                      promptAction.showToast({ message: '未获得保存授权，请重试' });
+                    }
                   })
               }
               .width('100%')
@@ -432,5 +521,12 @@ struct Badges {
     .width('100%')
     .height('100%')
     .backgroundColor(Theme.BG)
+    .bindSheet(this.showDetail, this.badgeDetailSheet(), {
+      height: 420,
+      showClose: false,
+      onDisappear: () => {
+        this.showDetail = false;
+      }
+    })
   }
 }

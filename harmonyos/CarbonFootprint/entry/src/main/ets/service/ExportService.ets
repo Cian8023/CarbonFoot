@@ -1,4 +1,6 @@
 import fs from '@ohos.file.fs';
+import util from '@ohos.util';
+import { bumpTick } from '../common/Constants';
 import { AppInit } from '../common/AppInit';
 import { DBHelper } from '../db/DBHelper';
 import { BehaviorRepo, PointsRepo, TaskRepo, BadgeRepo } from '../db/Repository';
@@ -107,5 +109,42 @@ export class ExportService {
     await store.executeSql('DELETE FROM t_points_record');
     await store.executeSql('DELETE FROM t_task_completion');
     await BadgeRepo.resetUnlocked();
+  }
+
+  /**
+   * 从备份 JSON 恢复：覆盖当前全部行为记录与积分流水（原 id 原样恢复，
+   * 保证积分流水的 ref_id 引用不断链）；任务完成记录与徽章不受影响。
+   * 返回恢复的行为记录条数。
+   */
+  static async importJson(path: string): Promise<number> {
+    const stat = fs.statSync(path);
+    const f = fs.openSync(path, fs.OpenMode.READ_ONLY);
+    const buf = new ArrayBuffer(stat.size);
+    fs.readSync(f.fd, buf);
+    fs.closeSync(f.fd);
+    const text = util.TextDecoder.create('utf-8').decodeToString(new Uint8Array(buf));
+    const data = JSON.parse(text) as BackupFile;
+    if (data.behaviors === undefined || data.points === undefined ||
+      !Array.isArray(data.behaviors) || !Array.isArray(data.points)) {
+      throw new Error('备份文件格式不正确');
+    }
+    const store = DBHelper.get();
+    DBHelper.beginTx();
+    try {
+      await store.executeSql('DELETE FROM t_behavior_record');
+      await store.executeSql('DELETE FROM t_points_record');
+      for (const r of data.behaviors) {
+        BehaviorRepo.insertWithIdSync(r);
+      }
+      for (const p of data.points) {
+        PointsRepo.insertWithIdSync(p);
+      }
+      DBHelper.commitTx();
+    } catch (err) {
+      DBHelper.rollbackTx();
+      throw err as Error;
+    }
+    bumpTick();
+    return data.behaviors.length;
   }
 }

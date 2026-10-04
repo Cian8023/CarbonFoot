@@ -43,8 +43,16 @@ export class PointsService {
     return await PointsRepo.list(limit);
   }
 
+  static async listPaged(source: string, limit: number): Promise<PointsRecord[]> {
+    return await PointsRepo.listPaged(source, limit);
+  }
+
   static async hasSourceRef(source: string, refId: number): Promise<boolean> {
     return await PointsRepo.hasSourceRef(source, refId);
+  }
+
+  static async listBySourceRef(source: string, refId: number): Promise<PointsRecord[]> {
+    return await PointsRepo.listBySourceRef(source, refId);
   }
 
   static async countSource(source: string): Promise<number> {

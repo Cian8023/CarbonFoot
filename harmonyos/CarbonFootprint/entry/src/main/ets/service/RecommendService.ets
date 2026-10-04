@@ -11,6 +11,8 @@ export interface Suggestion {
 interface ScoredTask {
   progress: TaskProgress;
   score: number;
+  dominant: string;
+  count: number;
 }
 
 /**
@@ -25,6 +27,11 @@ export class RecommendService {
     const all: TaskProgress[] = await TaskService.listProgress();
     const records = await RecommendService.recentRecords(14);
     const score = await RecommendService.subTypeScores(records);
+    const counts = new Map<string, number>();
+    for (const r of records) {
+      const prev = counts.get(r.subType);
+      counts.set(r.subType, (prev !== undefined ? prev : 0) + 1);
+    }
     const scored: ScoredTask[] = [];
     for (const p of all) {
       if (p.done) {
@@ -35,13 +42,35 @@ export class RecommendService {
       for (const st of check.subTypes) {
         s += score.get(st) !== undefined ? score.get(st) as number : 0;
       }
-      const item: ScoredTask = { progress: p, score: s };
+      // 与任务相关子类型中，近 14 天出现最多的作为"主导行为"
+      let dominant = check.subTypes.length > 0 ? check.subTypes[0] : '';
+      let cnt = counts.get(dominant) !== undefined ? counts.get(dominant) as number : 0;
+      for (const st of check.subTypes) {
+        const c = counts.get(st) !== undefined ? counts.get(st) as number : 0;
+        if (c > cnt) {
+          cnt = c;
+          dominant = st;
+        }
+      }
+      const item: ScoredTask = { progress: p, score: s, dominant: dominant, count: cnt };
       scored.push(item);
     }
     scored.sort((a: ScoredTask, b: ScoredTask) => b.score - a.score);
     const top: TaskProgress[] = [];
     for (let i = 0; i < scored.length && i < 3; i++) {
-      top.push(scored[i].progress);
+      const it = scored[i];
+      const tp: TaskProgress = {
+        task: it.progress.task,
+        progress: it.progress.progress,
+        target: it.progress.target,
+        done: it.progress.done,
+        reason: i === 0 && it.count > 0
+          ? `近 14 天「${it.dominant}」${it.count} 次，是你的强项，加码正合适`
+          : (it.count > 0
+            ? `与你近 14 天的「${it.dominant}」习惯相关，顺势完成`
+            : `近 14 天「${it.dominant}」还是空白，从它开始补短`)
+      };
+      top.push(tp);
     }
     return top;
   }

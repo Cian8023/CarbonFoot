@@ -6,10 +6,93 @@ import { Constants } from '../common/Constants';
 
 export type TrendKind = 'day7' | 'week8' | 'month12' | 'year5';
 
+/** 减排周报数据 */
+export interface WeeklyReport {
+  /** 本周减排（克） */
+  weekG: number;
+  /** 上周减排（克） */
+  lastWeekG: number;
+  /** 环比百分比；上周无数据时为 -999 */
+  deltaPct: number;
+  /** 本周最强子类型 */
+  topSub: string;
+  topSubG: number;
+  /** 本周有记录的天数 */
+  days: number;
+  slogan: string;
+}
+
 /**
  * 看板统计：趋势折线、分类占比、子类型对比。
  */
 export class StatsService {
+  /** 本月（自然月至今）累计减排（克） */
+  static monthSum(records: BehaviorRecord[]): number {
+    const start = DateUtil.startOfMonth(Date.now());
+    let sum = 0;
+    for (const r of records) {
+      if (r.createdAt >= start) {
+        sum += r.reductionG;
+      }
+    }
+    return sum;
+  }
+
+  /** 减排周报：本周/上周对比、最强子类型、打卡天数 */
+  static weekReport(records: BehaviorRecord[]): WeeklyReport {
+    const now = Date.now();
+    const weekStart = DateUtil.startOfWeek(now);
+    const lastStart = weekStart - 7 * DateUtil.DAY_MS;
+    let weekG = 0;
+    let lastG = 0;
+    const days = new Set<number>();
+    const subs = new Map<string, number>();
+    for (const r of records) {
+      if (r.createdAt >= weekStart) {
+        weekG += r.reductionG;
+        days.add(DateUtil.startOfDay(r.createdAt));
+        if (r.reductionG > 0) {
+          const prev = subs.get(r.subType);
+          subs.set(r.subType, (prev !== undefined ? prev : 0) + r.reductionG);
+        }
+      } else if (r.createdAt >= lastStart) {
+        lastG += r.reductionG;
+      }
+    }
+    let topSub = '';
+    let topSubG = 0;
+    subs.forEach((v: number, k: string) => {
+      if (v > topSubG) {
+        topSubG = v;
+        topSub = k;
+      }
+    });
+    let deltaPct = -999;
+    if (lastG > 0) {
+      deltaPct = Math.round((weekG - lastG) / lastG * 100);
+    }
+    let slogan = '本周还没有记录，从一件小事开始吧';
+    if (weekG > 0) {
+      if (lastG === 0) {
+        slogan = '本周已开启减排，保持节奏！';
+      } else if (deltaPct >= 0) {
+        slogan = `比上周多减 ${deltaPct}%，继续保持！`;
+      } else {
+        slogan = `比上周少了 ${-deltaPct}%，动起来追上去！`;
+      }
+    }
+    const rep: WeeklyReport = {
+      weekG: weekG,
+      lastWeekG: lastG,
+      deltaPct: deltaPct,
+      topSub: topSub,
+      topSubG: topSubG,
+      days: days.size,
+      slogan: slogan
+    };
+    return rep;
+  }
+
   static kindLabel(kind: TrendKind): string {
     if (kind === 'day7') {
       return '近7天';
@@ -21,6 +104,18 @@ export class StatsService {
     return '近5年';
   }
 
+  static shortLabel(kind: TrendKind): string {
+    if (kind === 'day7') {
+      return '日';
+    } else if (kind === 'week8') {
+      return '周';
+    } else if (kind === 'month12') {
+      return '月';
+    }
+    return '年';
+  }
+
+  /** 趋势档位短标签（日/周/月/年），用于首页切换 chip */
   static rangeStart(kind: TrendKind): number {
     const now = Date.now();
     if (kind === 'day7') {
@@ -50,17 +145,17 @@ export class StatsService {
       n = 7;
       stepMs = DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfDay;
-      labelFn = DateUtil.formatMD;
+      labelFn = (ts: number): string => new Date(ts).getDate() + '日';
     } else if (kind === 'week8') {
       n = 8;
       stepMs = 7 * DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfWeek;
-      labelFn = DateUtil.formatMD;
+      labelFn = (ts: number): string => new Date(ts).getDate() + '日';
     } else if (kind === 'month12') {
       n = 12;
       stepMs = 30 * DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfMonth;
-      labelFn = (ts: number): string => DateUtil.formatYM(ts).substring(5) + '月';
+      labelFn = (ts: number): string => (new Date(ts).getMonth() + 1) + '月';
     } else {
       n = 5;
       stepMs = 365 * DateUtil.DAY_MS;

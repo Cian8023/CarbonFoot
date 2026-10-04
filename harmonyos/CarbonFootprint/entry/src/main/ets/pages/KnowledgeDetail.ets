@@ -6,6 +6,8 @@ import { Theme } from '../common/Theme';
 import { Article } from '../model/Models';
 import { KnowledgeService } from '../service/KnowledgeService';
 import { PointsService } from '../service/PointsService';
+import { BadgeService } from '../service/BadgeService';
+import { BadgeUnlockOverlay } from '../components/BadgeUnlock';
 
 @Entry
 @Component
@@ -13,6 +15,8 @@ struct KnowledgeDetail {
   @State article: Article | null = null;
   @State reachedEnd: boolean = false;
   @State alreadyRead: boolean = false;
+  @State showUnlock: boolean = false;
+  @State unlockBadges: string[] = [];
 
   aboutToAppear(): void {
     this.load();
@@ -51,12 +55,19 @@ struct KnowledgeDetail {
       this.alreadyRead = true;
       bumpTick();
       promptAction.showToast({ message: `阅读完成，+${Constants.READ_POINTS} 积分！` });
+      // 阅读路径同样触发徽章检测（如博学环保人），解锁时展示动画
+      const newBadges: string[] = await BadgeService.checkAll();
+      if (newBadges.length > 0) {
+        this.unlockBadges = newBadges;
+        this.showUnlock = true;
+      }
     } catch (e) {
       promptAction.showToast({ message: '领取失败，请重试' });
     }
   }
 
   build() {
+    Stack() {
     Column({ space: 12 }) {
       Row() {
         Text('←')
@@ -130,6 +141,15 @@ struct KnowledgeDetail {
           .onClick(() => {
             this.claimReadPoints();
           })
+
+        Text('把文中的技巧变成行动 → 去记录低碳行为')
+          .fontSize(12)
+          .fontColor(Theme.TEXT_TERTIARY)
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
+            router.back();
+          })
       } else {
         Column({ space: 10 }) {
           Text('未找到该文章')
@@ -146,5 +166,15 @@ struct KnowledgeDetail {
     .width('100%')
     .height('100%')
     .backgroundColor(Theme.CARD)
+
+    if (this.showUnlock) {
+      BadgeUnlockOverlay({
+        badges: this.unlockBadges,
+        onClose: (): void => {
+          this.showUnlock = false;
+        }
+      })
+    }
+    }
   }
 }

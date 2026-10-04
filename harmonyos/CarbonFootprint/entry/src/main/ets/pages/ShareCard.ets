@@ -1,6 +1,7 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import fs from '@ohos.file.fs';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import util from '@ohos.util';
 import { Theme } from '../common/Theme';
 import { AppInit } from '../common/AppInit';
@@ -106,16 +107,12 @@ struct ShareCard {
       const dataUrl = this.ctx.toDataURL('image/png', 1.0);
       const b64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
       const buf: Uint8Array = new util.Base64Helper().decodeSync(b64);
-      const ctx = AppInit.getContext();
-      const dir = ctx.filesDir + '/share';
-      if (!fs.accessSync(dir)) {
-        fs.mkdirSync(dir, true);
-      }
-      const path = dir + '/share_card_' + DateUtil.formatYMD(Date.now()).replace(/-/g, '') + '.png';
-      const f = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+      const helper = photoAccessHelper.getPhotoAccessHelper(AppInit.getContext());
+      const uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'png');
+      const f = fs.openSync(uri, fs.OpenMode.READ_WRITE | fs.OpenMode.TRUNC);
       fs.writeSync(f.fd, buf.buffer as ArrayBuffer);
       fs.closeSync(f.fd);
-      promptAction.showToast({ message: '卡片已保存：' + path, duration: 3000 });
+      promptAction.showToast({ message: '卡片已保存到相册', duration: 3000 });
     } catch (e) {
       promptAction.showToast({ message: '保存失败：' + JSON.stringify(e) });
     }
@@ -151,13 +148,18 @@ struct ShareCard {
             }, 300);
           })
 
-        Button('保存分享卡片')
+        SaveButton({ text: SaveDescription.SAVE_IMAGE })
           .width('60%')
           .height(44)
           .fontSize(15)
+          .fontColor('#FFFFFF')
           .backgroundColor(Theme.PRIMARY)
-          .onClick(() => {
-            this.saveCard();
+          .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+            if (result === SaveButtonOnClickResult.SUCCESS) {
+              await this.saveCard();
+            } else {
+              promptAction.showToast({ message: '未获得保存授权，请重试' });
+            }
           })
 
         Text('卡片保存后可发送到微信朋友圈 / 家人群，带动更多人参与低碳生活')

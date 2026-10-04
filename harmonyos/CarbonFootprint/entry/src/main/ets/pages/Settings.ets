@@ -1,13 +1,11 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import { AppInit } from '../common/AppInit';
-import { Constants, bumpTick } from '../common/Constants';
+import { Constants } from '../common/Constants';
 import { Theme } from '../common/Theme';
-import { AppConfig } from '../common/AppConfig';
-import { BadgeDef, BehaviorRecord } from '../model/Models';
+import { BadgeDef } from '../model/Models';
 import { BadgeService } from '../service/BadgeService';
 import { PointsService } from '../service/PointsService';
-import { ExportService } from '../service/ExportService';
 import { PrefsService } from '../common/PrefsService';
 import { DateUtil } from '../utils/DateUtil';
 import { BehaviorRepo } from '../db/Repository';
@@ -22,9 +20,7 @@ export struct MineView {
   @State balance: number = 0;
   @State badgeText: string = '0/0';
   @State streak: number = 0;
-  @State aiKey: string = '';
-  @State aiUrl: string = '';
-  @State inclusiveUrl: string = '';
+  @State totalPoints: number = 0;
 
   aboutToAppear(): void {
     this.refresh();
@@ -46,9 +42,7 @@ export struct MineView {
         }
       }
       this.badgeText = `${unlocked}/${badges.length}`;
-      this.aiKey = await AppConfig.getAiApiKey();
-      this.aiUrl = await AppConfig.getAiBaseUrl();
-      this.inclusiveUrl = await AppConfig.getInclusiveBaseUrl();
+      this.totalPoints = await PointsService.totalEarned();
     } catch (e) {
       console.error('MineView refresh error: ' + JSON.stringify(e));
     }
@@ -64,46 +58,6 @@ export struct MineView {
     this.nickname = name;
     this.editing = false;
     promptAction.showToast({ message: '昵称已更新' });
-  }
-
-  private async doBackup(): Promise<void> {
-    try {
-      const path = await ExportService.backupJson();
-      promptAction.showToast({ message: '备份完成：' + path, duration: 3500 });
-    } catch (e) {
-      promptAction.showToast({ message: '备份失败，请重试' });
-    }
-  }
-
-  private async doExportCsv(): Promise<void> {
-    try {
-      const path = await ExportService.exportCsv();
-      promptAction.showToast({ message: '报表已导出：' + path, duration: 3500 });
-    } catch (e) {
-      promptAction.showToast({ message: '导出失败，请重试' });
-    }
-  }
-
-  private confirmClear(): void {
-    AlertDialog.show({
-      title: '清空所有数据',
-      message: '将删除全部行为记录、积分流水与任务完成记录，徽章将重新锁定。此操作不可恢复，确定继续？',
-      primaryButton: {
-        value: '取消',
-        action: () => {
-        }
-      },
-      secondaryButton: {
-        value: '清空',
-        fontColor: Theme.WARN,
-        action: () => {
-          ExportService.clearAll();
-          bumpTick();
-          promptAction.showToast({ message: '数据已清空' });
-          this.refresh();
-        }
-      }
-    });
   }
 
   @Builder
@@ -227,6 +181,19 @@ export struct MineView {
                 .fontColor(Theme.TEXT_TERTIARY)
             }
             .layoutWeight(1)
+
+            Divider().vertical(true).height(28).color(Theme.DIVIDER)
+
+            Column({ space: 4 }) {
+              Text('' + this.totalPoints)
+                .fontSize(19)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Theme.TEXT)
+              Text('累计积分')
+                .fontSize(11)
+                .fontColor(Theme.TEXT_TERTIARY)
+            }
+            .layoutWeight(1)
           }
           .width('100%')
         }
@@ -264,12 +231,11 @@ export struct MineView {
         Column() {
           Row({ space: 12 }) {
             Text('创')
-              .fontSize(12)
+              .fontSize(18)
               .fontColor(Theme.PRIMARY)
               .backgroundColor(Theme.PRIMARY_BG)
               .borderRadius(4)
               .padding({ left: 6, right: 6, top: 3, bottom: 3 })
-              .fontSize(18)
             Text('创新拓展')
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
@@ -299,105 +265,10 @@ export struct MineView {
         .backgroundColor(Theme.CARD)
         .clip(true)
 
-        // 服务配置
-        Column({ space: 10 }) {
-          Row({ space: 12 }) {
-            Text('配')
-              .fontSize(12)
-              .fontColor(Theme.PRIMARY)
-              .backgroundColor(Theme.PRIMARY_BG)
-              .borderRadius(4)
-              .padding({ left: 6, right: 6, top: 3, bottom: 3 })
-              .fontSize(18)
-            Text('服务配置（联网能力）')
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-          }
-          .width('100%')
-          .padding({ left: 14, right: 14, top: 14 })
-
-          Text('AI 视觉接口 API Key（留空 = 离线演示识别）')
-            .fontSize(11)
-            .fontColor(Theme.TEXT_TERTIARY)
-            .width('100%')
-          TextInput({ placeholder: 'sk-...', text: this.aiKey })
-            .height(40)
-            .type(InputType.NEW_PASSWORD)
-            .onChange((v: string) => {
-              this.aiKey = v;
-            })
-          Row({ space: 10 }) {
-            TextInput({ placeholder: '视觉接口地址', text: this.aiUrl })
-              .layoutWeight(1)
-              .height(40)
-              .onChange((v: string) => {
-                this.aiUrl = v;
-              })
-            Text('保存')
-              .fontSize(13)
-              .fontColor(Theme.PRIMARY)
-              .onClick(() => {
-                AppConfig.setAiApiKey(this.aiKey.trim());
-                AppConfig.setAiBaseUrl(this.aiUrl.trim());
-                promptAction.showToast({ message: 'AI 服务配置已保存' });
-              })
-          }
-          .width('100%')
-
-          Text('碳普惠平台地址（不可达 = 内置模拟模式）')
-            .fontSize(11)
-            .fontColor(Theme.TEXT_TERTIARY)
-            .width('100%')
-          Row({ space: 10 }) {
-            TextInput({ placeholder: 'http://服务器:端口', text: this.inclusiveUrl })
-              .layoutWeight(1)
-              .height(40)
-              .onChange((v: string) => {
-                this.inclusiveUrl = v;
-              })
-            Text('保存')
-              .fontSize(13)
-              .fontColor(Theme.PRIMARY)
-              .onClick(() => {
-                AppConfig.setInclusiveBaseUrl(this.inclusiveUrl.trim());
-                promptAction.showToast({ message: '碳普惠平台地址已保存' });
-              })
-          }
-          .width('100%')
-        }
-        .width('100%')
-        .padding({ left: 14, right: 14, bottom: 14 })
-        .borderRadius(16)
-        .backgroundColor(Theme.CARD)
-
-        // 数据管理
+        // 设置入口（个性化 / 服务配置 / 数据管理整合于此）
         Column() {
-          Row({ space: 12 }) {
-            Text('档')
-              .fontSize(12)
-              .fontColor(Theme.PRIMARY)
-              .backgroundColor(Theme.PRIMARY_BG)
-              .borderRadius(4)
-              .padding({ left: 6, right: 6, top: 3, bottom: 3 })
-              .fontSize(18)
-            Text('本地数据管理')
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-          }
-          .width('100%')
-          .padding(14)
-
-          Divider().color(Theme.DIVIDER)
-          this.menuItem('一键备份（JSON）', '导出到应用沙箱', (): void => {
-            this.doBackup();
-          })
-          Divider().color(Theme.DIVIDER)
-          this.menuItem('统计报表（CSV）', '月度减排汇总', (): void => {
-            this.doExportCsv();
-          })
-          Divider().color(Theme.DIVIDER)
-          this.menuItem('清空所有数据', '不可恢复', (): void => {
-            this.confirmClear();
+          this.menuItem('设置', '目标·布局·服务配置·数据管理', (): void => {
+            router.pushUrl({ url: 'pages/SettingsDetail' });
           })
         }
         .width('100%')
@@ -405,20 +276,17 @@ export struct MineView {
         .backgroundColor(Theme.CARD)
         .clip(true)
 
-        // 关于
-        Column({ space: 6 }) {
-          Text(`碳足迹 v${Constants.VERSION}`)
-            .fontSize(12)
-            .fontColor(Theme.TEXT_TERTIARY)
-          Text('OpenHarmony API 12 · 数据仅存储在本机，不上传云端')
+        // 底部声明
+        Column({ space: 4 }) {
+          Text(`碳足迹 v${Constants.VERSION} · Apache-2.0 · 零三方依赖`)
             .fontSize(11)
             .fontColor(Theme.TEXT_TERTIARY)
           Text('减排因子参考生态环境部公开核算方法，仅作生活估算演示')
-            .fontSize(11)
+            .fontSize(10)
             .fontColor(Theme.TEXT_TERTIARY)
         }
         .width('100%')
-        .padding(10)
+        .padding(6)
       }
       .width('100%')
       .padding(14)

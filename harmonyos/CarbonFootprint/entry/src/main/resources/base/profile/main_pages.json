@@ -7,6 +7,7 @@
     "pages/AiRecognize",
     "pages/Inclusive",
     "pages/Family",
-    "pages/ShareCard"
+    "pages/ShareCard",
+    "pages/SettingsDetail"
   ]
 }

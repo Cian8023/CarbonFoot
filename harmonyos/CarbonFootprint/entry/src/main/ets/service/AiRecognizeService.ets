@@ -1,6 +1,8 @@
 import fs from '@ohos.file.fs';
 import util from '@ohos.util';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
+import { cameraPicker } from '@kit.CameraKit';
+import camera from '@ohos.multimedia.camera';
 import { AppInit } from '../common/AppInit';
 import { AppConfig } from '../common/AppConfig';
 import { HttpClient } from '../network/HttpClient';
@@ -62,6 +64,22 @@ interface ChatRequest {
  */
 export class AiRecognizeService {
   /** 打开系统相册选图，返回文件 uri */
+  /**
+   * 拉起系统相机拍摄（cameraPicker 安全 Picker，无需申请相机权限；
+   * 模拟器使用内置虚拟相机画面，真机为真实拍摄）。
+   */
+  static async shootImage(): Promise<string> {
+    const profile: cameraPicker.PickerProfile = {
+      cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
+    };
+    const result: cameraPicker.PickerResult = await cameraPicker.pick(
+      AppInit.getContext(), [cameraPicker.PickerMediaType.PHOTO], profile);
+    if (result.resultCode !== 0 || result.resultUri === '') {
+      throw new Error('未拍摄图片');
+    }
+    return result.resultUri;
+  }
+
   static async pickImage(): Promise<string> {
     const picker = new photoAccessHelper.PhotoViewPicker();
     const opt = new photoAccessHelper.PhotoSelectOptions();

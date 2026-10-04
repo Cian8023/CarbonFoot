@@ -57,8 +57,8 @@ export struct BehaviorPicker {
             .fontSize(13)
             .fontColor(this.selSub === sub.name && this.selType === this.categories[this.catIndex].name
               ? '#FFFFFF' : Theme.TEXT)
-            .width('23%')
-            .margin({ right: '2.6%', bottom: 8 })
+            .width('23.5%')
+            .margin({ right: '1.5%', bottom: 8 })
             .padding({ top: 12, bottom: 12 })
             .textAlign(TextAlign.Center)
             .borderRadius(10)

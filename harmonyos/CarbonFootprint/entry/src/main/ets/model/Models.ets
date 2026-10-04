@@ -63,6 +63,8 @@ export interface TaskProgress {
   progress: number;
   target: number;
   done: boolean;
+  /** 智能推荐理由（仅推荐列表填充） */
+  reason?: string;
 }
 
 export interface BadgeDef {

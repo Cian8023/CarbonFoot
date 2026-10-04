@@ -21,10 +21,9 @@ struct AiRecognize {
   @State estimatePts: number = 0;
   @State submitting: boolean = false;
 
-  private async pickAndRecognize(): Promise<void> {
+  private async recognizeUri(uri: string): Promise<void> {
     try {
       await AppInit.ensure();
-      const uri = await AiRecognizeService.pickImage();
       this.recognizing = true;
       promptAction.showToast({ message: 'AI 识别中…' });
       const b64 = await AiRecognizeService.imageToBase64(uri);
@@ -35,6 +34,24 @@ struct AiRecognize {
       promptAction.showToast({ message: '识别失败：' + (e as Error).message });
     } finally {
       this.recognizing = false;
+    }
+  }
+
+  private async pickAndRecognize(): Promise<void> {
+    try {
+      const uri = await AiRecognizeService.pickImage();
+      await this.recognizeUri(uri);
+    } catch (e) {
+      promptAction.showToast({ message: '识别失败：' + (e as Error).message });
+    }
+  }
+
+  private async shootAndRecognize(): Promise<void> {
+    try {
+      const uri = await AiRecognizeService.shootImage();
+      await this.recognizeUri(uri);
+    } catch (e) {
+      promptAction.showToast({ message: '识别失败：' + (e as Error).message });
     }
   }
 
@@ -138,15 +155,27 @@ struct AiRecognize {
           .borderRadius(16)
           .backgroundColor(Theme.CARD)
 
-          Button(this.recognizing ? '识别中…' : ' 从相册选择图片识别')
-            .width('100%')
-            .height(46)
-            .fontSize(15)
-            .backgroundColor(Theme.PRIMARY)
-            .enabled(!this.recognizing)
-            .onClick(() => {
-              this.pickAndRecognize();
-            })
+          Row({ space: 10 }) {
+            Button(this.recognizing ? '识别中…' : '📷 拍照识别')
+              .layoutWeight(1)
+              .height(46)
+              .fontSize(15)
+              .backgroundColor(Theme.PRIMARY)
+              .enabled(!this.recognizing)
+              .onClick(() => {
+                this.shootAndRecognize();
+              })
+            Button('🖼 从相册选择')
+              .layoutWeight(1)
+              .height(46)
+              .fontSize(15)
+              .backgroundColor(Theme.PRIMARY_HOVER)
+              .enabled(!this.recognizing)
+              .onClick(() => {
+                this.pickAndRecognize();
+              })
+          }
+          .width('100%')
 
           // 识别结果
           if (this.guess !== null) {

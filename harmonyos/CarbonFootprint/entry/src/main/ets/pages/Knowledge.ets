@@ -77,6 +77,26 @@ struct Knowledge {
       .width('100%')
       .padding({ left: 14, right: 14 })
 
+      // 阅读统计
+      Row({ space: 8 }) {
+        Text(`已读 ${this.readIds.length}/${KnowledgeService.list('全部').length} 篇`)
+          .fontSize(12)
+          .fontColor(Theme.TEXT)
+        Text(`阅读积分 +${this.readIds.length * 5}`)
+          .fontSize(12)
+          .fontColor(Theme.POINTS)
+        Blank()
+        Text('连续阅读可解锁「博学环保人」徽章')
+          .fontSize(10)
+          .fontColor(Theme.TEXT_TERTIARY)
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+      .borderRadius(Theme.R_SMALL)
+      .backgroundColor(Theme.CARD)
+      .border({ width: 1, color: Theme.DIVIDER })
+      .margin({ left: 14, right: 14 })
+
       List({ space: 10 }) {
         ForEach(this.articles, (a: Article) => {
           ListItem() {

@@ -144,13 +144,25 @@ struct Inclusive {
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
-                Button(`${b.cost} 分`)
-                  .fontSize(12)
-                  .height(32)
-                  .backgroundColor(this.balance >= b.cost ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
-                  .onClick(() => {
-                    this.doExchange(b);
-                  })
+                Column({ space: 3 }) {
+                  Button(`${b.cost} 分`)
+                    .fontSize(12)
+                    .height(32)
+                    .backgroundColor(this.balance >= b.cost && b.stock > 0 ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
+                    .enabled(b.stock > 0)
+                    .onClick(() => {
+                      this.doExchange(b);
+                    })
+                  if (b.stock <= 0) {
+                    Text('已兑完')
+                      .fontSize(9)
+                      .fontColor('#F53F3F')
+                  } else {
+                    Text(`余 ${b.stock}`)
+                      .fontSize(9)
+                      .fontColor(Theme.TEXT_TERTIARY)
+                  }
+                }
               }
               .width('100%')
               .padding(12)

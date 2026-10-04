@@ -56,6 +56,22 @@ export class BehaviorRepo {
     return DBHelper.get().insertSync('t_behavior_record', BehaviorRepo.bucket(r));
   }
 
+  /** 导入恢复用：保留原始 id 插入，保证积分流水 ref_id 引用不断链 */
+  static insertWithIdSync(r: BehaviorRecord): void {
+    const bucket: relationalStore.ValuesBucket = {
+      'id': r.id,
+      'type': r.type,
+      'sub_type': r.subType,
+      'value': r.value,
+      'unit': r.unit,
+      'factor': r.factor,
+      'reduction_g': r.reductionG,
+      'created_at': r.createdAt,
+      'note': r.note
+    };
+    DBHelper.get().insertSync('t_behavior_record', bucket);
+  }
+
   static async deleteById(id: number): Promise<void> {
     const pred = new relationalStore.RdbPredicates('t_behavior_record');
     pred.equalTo('id', id);
@@ -66,6 +82,20 @@ export class BehaviorRepo {
     const pred = new relationalStore.RdbPredicates('t_behavior_record');
     pred.equalTo('id', id);
     const bucket: relationalStore.ValuesBucket = { 'note': note };
+    await DBHelper.get().update(bucket, pred);
+  }
+
+  static async updateValue(id: number, value: number, reductionG: number): Promise<void> {
+    const pred = new relationalStore.RdbPredicates('t_behavior_record');
+    pred.equalTo('id', id);
+    const bucket: relationalStore.ValuesBucket = { 'value': value, 'reduction_g': reductionG };
+    await DBHelper.get().update(bucket, pred);
+  }
+
+  static async updateTime(id: number, ts: number): Promise<void> {
+    const pred = new relationalStore.RdbPredicates('t_behavior_record');
+    pred.equalTo('id', id);
+    const bucket: relationalStore.ValuesBucket = { 'created_at': ts };
     await DBHelper.get().update(bucket, pred);
   }
 
@@ -182,6 +212,20 @@ export class PointsRepo {
     return DBHelper.get().insertSync('t_points_record', PointsRepo.bucket(p));
   }
 
+  /** 导入恢复用：保留原始 id 与余额快照 */
+  static insertWithIdSync(p: PointsRecord): void {
+    const bucket: relationalStore.ValuesBucket = {
+      'id': p.id,
+      'source': p.source,
+      'ref_id': p.refId,
+      'action': p.action,
+      'points': p.points,
+      'balance_after': p.balanceAfter,
+      'created_at': p.createdAt
+    };
+    DBHelper.get().insertSync('t_points_record', bucket);
+  }
+
   /** 最新余额 = 最近一笔流水的 balance_after */
   static async lastBalance(): Promise<number> {
     const pred = new relationalStore.RdbPredicates('t_points_record');
@@ -197,6 +241,22 @@ export class PointsRepo {
 
   static async list(limit: number): Promise<PointsRecord[]> {
     const pred = new relationalStore.RdbPredicates('t_points_record');
+    pred.orderByDesc('id').limitAs(limit);
+    const rs = await DBHelper.get().query(pred);
+    const list: PointsRecord[] = [];
+    while (rs.goToNextRow()) {
+      list.push(rowToPoints(rs));
+    }
+    rs.close();
+    return list;
+  }
+
+  /** 按来源过滤 + 限量分页（source 传 '全部' 不过滤） */
+  static async listPaged(source: string, limit: number): Promise<PointsRecord[]> {
+    const pred = new relationalStore.RdbPredicates('t_points_record');
+    if (source !== '全部') {
+      pred.equalTo('source', source);
+    }
     pred.orderByDesc('id').limitAs(limit);
     const rs = await DBHelper.get().query(pred);
     const list: PointsRecord[] = [];
@@ -226,6 +286,19 @@ export class PointsRepo {
     const n = rs.rowCount;
     rs.close();
     return n > 0;
+  }
+
+  /** 某条行为记录关联的全部积分流水（发放/修改补正/删除冲减） */
+  static async listBySourceRef(source: string, refId: number): Promise<PointsRecord[]> {
+    const pred = new relationalStore.RdbPredicates('t_points_record');
+    pred.equalTo('source', source).equalTo('ref_id', refId).orderByAsc('id');
+    const rs = await DBHelper.get().query(pred);
+    const list: PointsRecord[] = [];
+    while (rs.goToNextRow()) {
+      list.push(rowToPoints(rs));
+    }
+    rs.close();
+    return list;
   }
 
   static async countSource(source: string): Promise<number> {
@@ -321,6 +394,23 @@ export class TaskRepo {
 
   static async countCompletions(): Promise<number> {
     const pred = new relationalStore.RdbPredicates('t_task_completion');
+    const rs = await DBHelper.get().query(pred);
+    const n = rs.rowCount;
+    rs.close();
+    return n;
+  }
+
+  /** 撤销某任务在周期内的完成记录（任务回退用） */
+  static async deleteCompletionsBetween(taskId: number, startTs: number, endTs: number): Promise<void> {
+    const pred = new relationalStore.RdbPredicates('t_task_completion');
+    pred.equalTo('task_id', taskId).between('completed_at', startTs, endTs);
+    await DBHelper.get().delete(pred);
+  }
+
+  /** 全部任务在某时段内的完成次数（周统计用） */
+  static async countCompletionsBetween(startTs: number, endTs: number): Promise<number> {
+    const pred = new relationalStore.RdbPredicates('t_task_completion');
+    pred.between('completed_at', startTs, endTs);
     const rs = await DBHelper.get().query(pred);
     const n = rs.rowCount;
     rs.close();
