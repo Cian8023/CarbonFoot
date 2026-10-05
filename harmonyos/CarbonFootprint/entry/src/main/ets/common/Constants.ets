@@ -2,7 +2,7 @@ import { Theme } from './Theme';
 
 export class Constants {
   static readonly APP_NAME: string = '碳足迹';
-  static readonly VERSION: string = '1.1.0';
+  static readonly VERSION: string = '5.0.0';
 
   // 每 100g 减排量兑换 1 积分
   static readonly POINTS_PER_100G: number = 1;
