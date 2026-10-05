@@ -122,8 +122,9 @@ struct Family {
             }
             .width('100%')
             .padding(24)
-            .borderRadius(16)
+            .borderRadius(Theme.R_LARGE)
             .backgroundColor(Theme.CARD)
+            .shadow(Theme.CARD_SHADOW)
           } else {
             // 组信息 + 合并总览
             Column({ space: 10 }) {
@@ -177,9 +178,9 @@ struct Family {
             }
             .width('100%')
             .padding(16)
-            .borderRadius(Theme.R_MEDIUM)
+            .borderRadius(Theme.R_LARGE)
             .backgroundColor(Theme.CARD)
-            .border({ width: 1, color: Theme.DIVIDER })
+            .shadow(Theme.CARD_SHADOW)
 
             // 成员排行
             Column({ space: 10 }) {
@@ -232,14 +233,15 @@ struct Family {
                 }
                 .width('100%')
                 .padding(12)
-                .borderRadius(12)
-                .backgroundColor(Theme.BG)
+                .borderRadius(14)
+                .backgroundColor(Theme.BG_GRAY)
               }, (m: FamilyMember) => m.deviceId)
             }
             .width('100%')
             .padding(14)
-            .borderRadius(16)
+            .borderRadius(Theme.R_LARGE)
             .backgroundColor(Theme.CARD)
+            .shadow(Theme.CARD_SHADOW)
 
             // 加入成员（演示模式）
             Column({ space: 10 }) {
@@ -271,8 +273,9 @@ struct Family {
             }
             .width('100%')
             .padding(14)
-            .borderRadius(16)
+            .borderRadius(Theme.R_LARGE)
             .backgroundColor(Theme.CARD)
+            .shadow(Theme.CARD_SHADOW)
           }
 
           Text('说明：当前为家庭组演示模式，成员减排与积分数据由本机模拟生成，合并统计与排行链路完整可演示；分布式多端真实同步为后续迭代方向。')

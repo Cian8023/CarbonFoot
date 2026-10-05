@@ -13,6 +13,17 @@ import { BehaviorRecord, SubmitResult } from '../model/Models';
 export class BehaviorService {
   static async submit(type: string, subType: string, value: number, unit: string,
     factor: number, ts: number, note: string): Promise<SubmitResult> {
+    // 统一防御校验：录入页与 AI 识别链路都经过这里，任何入口都不可绕过上限
+    const sub = CalculationService.findSub(type, subType);
+    if (sub === null) {
+      throw new Error('未知的行为类型');
+    }
+    if (!isFinite(value) || value <= 0) {
+      throw new Error('数值必须大于 0');
+    }
+    if (value > sub.max) {
+      throw new Error(`超出单次上限：最多 ${sub.max} ${sub.unit}`);
+    }
     const grams: number = Math.round(value * factor);
     const record: BehaviorRecord = {
       id: 0,
@@ -93,7 +104,11 @@ export class BehaviorService {
     if (rec === null) {
       return;
     }
-    const newG = CalculationService.calculate(rec.type, rec.subType, newValue);
+    if (!isFinite(newValue) || newValue <= 0) {
+      throw new Error('数值必须大于 0');
+    }
+    // 用记录内因子快照重算：因子库后续修订或子类型下架不影响历史记录修订
+    const newG = Math.round(newValue * rec.factor);
     const oldPoints = CalculationService.valueToPoints(rec.reductionG);
     const newPoints = CalculationService.valueToPoints(newG);
     DBHelper.beginTx();

@@ -1,3 +1,5 @@
+import { Theme } from '../common/Theme';
+
 @Component
 export struct EmptyState {
   icon: string = '';
@@ -13,19 +15,20 @@ export struct EmptyState {
           .fontSize(52)
       }
       Text(this.title)
-        .fontSize(16)
+        .fontSize(17)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#1F2933')
+        .fontColor(Theme.TEXT)
       if (this.desc !== '') {
         Text(this.desc)
           .fontSize(13)
-          .fontColor('#7A8B99')
+          .fontColor(Theme.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
       }
       if (this.buttonText !== '') {
         Button(this.buttonText)
-          .backgroundColor('#2E7D32')
+          .backgroundColor(Theme.PRIMARY)
           .fontSize(14)
+          .shadow(Theme.CARD_SHADOW)
           .onClick(() => {
             this.onButton();
           })

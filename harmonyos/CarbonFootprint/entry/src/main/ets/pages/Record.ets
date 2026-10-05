@@ -165,13 +165,14 @@ export struct RecordView {
       Column({ space: 14 }) {
         Row() {
           Text('低碳行为录入')
-            .fontSize(20)
+            .fontSize(22)
             .fontWeight(FontWeight.Bold)
           Blank()
           Text('拍照识别')
             .fontSize(13)
             .fontColor(Theme.PRIMARY)
-            .border({ width: 1, color: Theme.PRIMARY, radius: 14 })
+            .backgroundColor(Theme.PRIMARY_BG)
+            .borderRadius(14)
             .padding({ left: 12, right: 12, top: 5, bottom: 5 })
             .onClick(() => {
               router.pushUrl({ url: 'pages/AiRecognize' });
@@ -189,8 +190,9 @@ export struct RecordView {
         }
         .width('100%')
         .padding(14)
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
 
         // 2. 数值输入
         Column({ space: 10 }) {
@@ -203,6 +205,8 @@ export struct RecordView {
               .type(InputType.NUMBER_DECIMAL)
               .layoutWeight(1)
               .height(44)
+              .backgroundColor(Theme.BG_GRAY)
+              .borderRadius(12)
               .onChange((v: string) => {
                 this.valueText = v;
               })
@@ -230,8 +234,9 @@ export struct RecordView {
         }
         .width('100%')
         .padding(14)
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
 
         // 3. 实时减排反馈
         Column({ space: 8 }) {
@@ -261,7 +266,7 @@ export struct RecordView {
         }
         .width('100%')
         .padding(16)
-        .borderRadius(Theme.R_MEDIUM)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.PRIMARY_BG)
 
         // 4. 时间 + 备注
@@ -292,6 +297,8 @@ export struct RecordView {
             TextInput({ placeholder: '选填，≤100 字', text: this.noteText })
               .layoutWeight(1)
               .height(40)
+              .backgroundColor(Theme.BG_GRAY)
+              .borderRadius(12)
               .onChange((v: string) => {
                 this.noteText = v;
               })
@@ -300,14 +307,16 @@ export struct RecordView {
         }
         .width('100%')
         .padding(14)
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
 
         Button(this.submitting ? '保存中…' : '提交记录')
           .width('100%')
-          .height(46)
+          .height(48)
           .fontSize(16)
           .backgroundColor(Theme.PRIMARY)
+          .shadow(Theme.CARD_SHADOW)
           .enabled(!this.submitting)
           .onClick(() => {
             this.submit();

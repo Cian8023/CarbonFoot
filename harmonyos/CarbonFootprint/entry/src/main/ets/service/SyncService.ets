@@ -146,6 +146,11 @@ export class SyncService {
       }
     }
     const members = await SyncService.listMembers();
-    return sum * (1 + members.length);
+    // 与合并总览同口径（逐人相加）：本机真实周减排 + 各演示成员按总量 10% 折算周减排
+    let memberWeek = 0;
+    for (const m of members) {
+      memberWeek += Math.floor(m.totalG / 10);
+    }
+    return sum + memberWeek;
   }
 }

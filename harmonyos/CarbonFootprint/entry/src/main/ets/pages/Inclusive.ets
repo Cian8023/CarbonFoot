@@ -112,8 +112,10 @@ struct Inclusive {
           }
           .width('100%')
           .padding(14)
-          .borderRadius(14)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
+          .shadow(Theme.CARD_SHADOW)
+          .shadow(Theme.CARD_SHADOW)
 
           // 权益商城
           Column({ space: 10 }) {
@@ -166,14 +168,15 @@ struct Inclusive {
               }
               .width('100%')
               .padding(12)
-              .borderRadius(12)
-              .backgroundColor(Theme.BG)
+              .borderRadius(14)
+              .backgroundColor(Theme.BG_GRAY)
             }, (b: Benefit) => b.id)
           }
           .width('100%')
           .padding(14)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
+          .shadow(Theme.CARD_SHADOW)
 
           // 权益记录
           if (this.entitlements.length > 0) {

@@ -8,6 +8,7 @@ import { AppInit } from '../common/AppInit';
 import { BehaviorRecord } from '../model/Models';
 import { BehaviorRepo } from '../db/Repository';
 import { BadgeService } from '../service/BadgeService';
+import { fpFont } from '../components/Chart';
 import { DateUtil } from '../utils/DateUtil';
 import { PrefsService } from '../common/PrefsService';
 
@@ -69,33 +70,33 @@ struct ShareCard {
     this.ctx.arc(20, h - 60, 70, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.textAlign = 'center';
-    // 标题
+    // 标题（Canvas 字号按密度换算，屏显与导出 PNG 均为高清比例）
     this.ctx.fillStyle = '#C8E6C9';
-    this.ctx.font = '13px sans-serif';
+    this.ctx.font = fpFont(13);
     this.ctx.fillText('碳足迹 · 全民绿色生活', w / 2, 52);
     this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.font = 'bold 26px sans-serif';
+    this.ctx.font = 'bold ' + fpFont(26) + ' sans-serif';
     this.ctx.fillText('我的低碳成绩单', w / 2, 90);
     // 主数据
-    this.ctx.font = '13px sans-serif';
+    this.ctx.font = fpFont(13);
     this.ctx.fillStyle = '#C8E6C9';
     this.ctx.fillText('今日减排', w / 2, 150);
-    this.ctx.font = 'bold 46px sans-serif';
+    this.ctx.font = 'bold ' + fpFont(46) + ' sans-serif';
     this.ctx.fillStyle = '#FFFFFF';
     this.ctx.fillText(`${this.todayKg} kg`, w / 2, 200);
-    this.ctx.font = '13px sans-serif';
+    this.ctx.font = fpFont(13);
     this.ctx.fillStyle = '#C8E6C9';
     this.ctx.fillText('CO₂e', w / 2, 224);
     // 副数据行
-    this.ctx.font = '14px sans-serif';
+    this.ctx.font = fpFont(14);
     this.ctx.fillStyle = '#FFFFFF';
     this.ctx.fillText(`累计减排 ${this.totalKg}kg`, w * 0.28, 280);
     this.ctx.fillText(`连续打卡 ${this.streak}天`, w * 0.72, 280);
     // 昵称 + 标语
-    this.ctx.font = '15px sans-serif';
+    this.ctx.font = fpFont(15);
     this.ctx.fillStyle = '#FFFFFF';
     this.ctx.fillText(`—— ${this.nickname} ——`, w / 2, 330);
-    this.ctx.font = '12px sans-serif';
+    this.ctx.font = fpFont(12);
     this.ctx.fillStyle = '#C8E6C9';
     this.ctx.fillText('每一克减排，都是给地球的温柔', w / 2, 360);
     this.ctx.fillText('我在用「碳足迹」践行低碳生活', w / 2, 386);
@@ -141,7 +142,8 @@ struct ShareCard {
         Canvas(this.ctx)
           .width('86%')
           .height(420)
-          .borderRadius(16)
+          .borderRadius(20)
+          .shadow(Theme.CARD_SHADOW)
           .onReady(() => {
             setTimeout(() => {
               this.draw();

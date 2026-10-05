@@ -95,6 +95,18 @@ export interface SubmitResult {
   newBadges: string[];
 }
 
+/** 任务完成记录（备份/恢复用） */
+export interface TaskCompletionRecord {
+  taskId: number;
+  completedAt: number;
+}
+
+/** 徽章解锁状态（备份/恢复用） */
+export interface BadgeUnlockRecord {
+  code: string;
+  unlockedAt: number;
+}
+
 /** 积分来源中文映射 */
 export function sourceLabel(source: string): string {
   if (source === 'behavior') {

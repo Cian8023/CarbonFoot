@@ -30,11 +30,11 @@ struct Index {
   }
 
   @Builder
-  tabItem(label: string, icon: string, index: number) {
+  tabItem(label: string, icon: Resource, index: number) {
     Column({ space: 2 }) {
-      Text(icon)
-        .fontSize(20)
-        .fontColor(this.mainTab === index ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
+      SymbolGlyph(icon)
+        .fontSize(22)
+        .fontColor([this.mainTab === index ? Theme.PRIMARY : Theme.TEXT_TERTIARY])
       Text(label)
         .fontSize(10)
         .fontWeight(this.mainTab === index ? FontWeight.Medium : FontWeight.Normal)
@@ -49,30 +49,31 @@ struct Index {
       TabContent() {
         HomeView()
       }
-      .tabBar(this.tabItem('首页', '🏠', Constants.TAB_HOME))
+      .tabBar(this.tabItem('首页', $r('sys.symbol.house'), Constants.TAB_HOME))
 
       TabContent() {
         RecordView()
       }
-      .tabBar(this.tabItem('录入', '✏️', Constants.TAB_RECORD))
+      .tabBar(this.tabItem('录入', $r('sys.symbol.plus'), Constants.TAB_RECORD))
 
       TabContent() {
         HistoryView()
       }
-      .tabBar(this.tabItem('历史', '📜', Constants.TAB_HISTORY))
+      .tabBar(this.tabItem('历史', $r('sys.symbol.clock'), Constants.TAB_HISTORY))
 
       TabContent() {
         TasksView()
       }
-      .tabBar(this.tabItem('任务', '🎯', Constants.TAB_TASKS))
+      .tabBar(this.tabItem('任务', $r('sys.symbol.calendar'), Constants.TAB_TASKS))
 
       TabContent() {
         MineView()
       }
-      .tabBar(this.tabItem('我的', '👤', Constants.TAB_MINE))
+      .tabBar(this.tabItem('我的', $r('sys.symbol.person'), Constants.TAB_MINE))
     }
     .scrollable(false)
-    .barHeight(60)
+    .barHeight(64)
+    .barBackgroundColor('#FFFFFF')
     .backgroundColor(Theme.BG)
     .onChange((index: number) => {
       this.mainTab = index;
@@ -100,25 +101,75 @@ struct HomeView {
     weekG: 0, lastWeekG: 0, deltaPct: -999, topSub: '', topSubG: 0, days: 0, slogan: ''
   };
   @State cardOrder: string[] = DEFAULT_HOME_LAYOUT;
+  @State displayG: number = 0;
+  @State heroScale: number = 1;
+  @State homeReady: boolean = false;
+  @State nickname: string = '绿色生活家';
+  private countTimer: number = -1;
 
-  /** 本月剩余天数（含今天） */
-  private daysLeftInMonth(): number {
-    const d = new Date();
-    const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    return daysInMonth - d.getDate() + 1;
+  private todayLabel(): string {
+    const w: string[] = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    return DateUtil.formatMD(Date.now()) + ' ' + w[new Date().getDay()];
   }
 
-  /** 目标节奏提示文本；已达成或无目标返回空串 */
-  private paceText(): string {
-    if (this.monthGoalKg <= 0 || this.monthG >= this.monthGoalKg * 1000) {
-      return '';
+  private greeting(): string {
+    const h = new Date().getHours();
+    if (h < 11) {
+      return '早上好';
+    } else if (h < 14) {
+      return '中午好';
+    } else if (h < 18) {
+      return '下午好';
     }
-    const perDay = (this.monthGoalKg * 1000 - this.monthG) / 1000 / this.daysLeftInMonth();
-    return `本月还剩 ${this.daysLeftInMonth()} 天，日均 ${perDay.toFixed(2)} kg 即可达成`;
+    return '晚上好';
   }
 
   async aboutToAppear(): Promise<void> {
+    // 内容层入场淡入上浮
+    setTimeout((): void => {
+      this.homeReady = true;
+    }, 60);
     await this.refresh();
+  }
+
+  aboutToDisappear(): void {
+    if (this.countTimer >= 0) {
+      clearInterval(this.countTimer);
+      this.countTimer = -1;
+    }
+  }
+
+  /** hero 数字滚动动画（大厂 CountUp），落定后轻弹一次 */
+  private animateHero(target: number): void {
+    if (this.countTimer >= 0) {
+      clearInterval(this.countTimer);
+      this.countTimer = -1;
+    }
+    const start = this.displayG;
+    const diff = target - start;
+    if (Math.abs(diff) < 0.0001) {
+      this.displayG = target;
+      return;
+    }
+    let i = 0;
+    const steps = 24;
+    this.countTimer = setInterval((): void => {
+      i++;
+      this.displayG = start + diff * i / steps;
+      if (i >= steps) {
+        this.displayG = target;
+        clearInterval(this.countTimer);
+        this.countTimer = -1;
+        animateTo({ duration: 130, curve: Curve.EaseOut }, (): void => {
+          this.heroScale = 1.1;
+        });
+        setTimeout((): void => {
+          animateTo({ duration: 200, curve: Curve.EaseInOut }, (): void => {
+            this.heroScale = 1;
+          });
+        }, 130);
+      }
+    }, 16);
   }
 
   async refresh(): Promise<void> {
@@ -133,6 +184,7 @@ struct HomeView {
         }
       }
       this.todayG = todaySum;
+      this.animateHero(todaySum);
       this.balance = await PointsService.getBalance();
       this.pending = await TaskService.pendingCount();
       this.streak = await BadgeService.currentStreak();
@@ -142,6 +194,7 @@ struct HomeView {
       this.weekly = StatsService.weekReport(records);
       this.monthGoalKg = await PrefsService.getMonthlyGoalKg();
       this.cardOrder = await PrefsService.getHomeLayout();
+      this.nickname = await PrefsService.getNickname();
       const all = await TaskService.listProgress();
       const top: TaskProgress[] = [];
       for (const p of all) {
@@ -159,83 +212,17 @@ struct HomeView {
     }
   }
 
+  /** 首页核心大卡：今日减排大数字 + 本月目标环 + 底部统计条（运动健康步数卡式） */
   @Builder
   statCard() {
-    Column({ space: 14 }) {
-      Row() {
-        Column({ space: 6 }) {
-          Text('今日减排')
-            .fontSize(12)
-            .fontColor(Theme.TEXT_TERTIARY)
-          Row({ space: 4 }) {
-            Text(DateUtil.gramsToKg(this.todayG))
-              .fontSize(38)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(Theme.PRIMARY)
-            Text('kg CO₂e')
-              .fontSize(13)
-              .fontColor(Theme.TEXT_TERTIARY)
-              .margin({ bottom: 6 })
-          }
-          .alignItems(VerticalAlign.Bottom)
-        }
-        .alignItems(HorizontalAlign.Start)
-        .layoutWeight(1)
-
-        Column({ space: 10 }) {
-          Row({ space: 6 }) {
-            Text('连续打卡')
-              .fontSize(11)
-              .fontColor(Theme.TEXT_TERTIARY)
-            Text(`${this.streak} 天`)
-              .fontSize(12)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Theme.TEXT)
-            Circle({ width: 7, height: 7 })
-              .fill(this.todayG > 0 ? Theme.PRIMARY : Theme.DIVIDER)
-          }
-          Row({ space: 6 }) {
-            Text('碳积分')
-              .fontSize(11)
-              .fontColor(Theme.TEXT_TERTIARY)
-            Text(`${this.balance}`)
-              .fontSize(12)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Theme.TEXT)
-          }
-          Row({ space: 6 }) {
-            Text('待办任务')
-              .fontSize(11)
-              .fontColor(Theme.TEXT_TERTIARY)
-            Text(`${this.pending}`)
-              .fontSize(12)
-              .fontWeight(FontWeight.Medium)
-              .fontColor(Theme.TEXT)
-          }
-        }
-        .alignItems(HorizontalAlign.End)
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Top)
-    }
-    .width('100%')
-    .padding(18)
-    .borderRadius(Theme.R_MEDIUM)
-    .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
-  }
-
-  /** 本月减排目标环（借鉴运动健康步数圆环） */
-  @Builder
-  goalCard() {
-    Column({ space: 10 }) {
+    Column() {
       Row() {
         Text('本月减排目标')
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
         Blank()
         Text('修改目标 >')
-          .fontSize(13)
+          .fontSize(12)
           .fontColor(Theme.PRIMARY)
           .onClick(() => {
             router.pushUrl({ url: 'pages/SettingsDetail', params: { focus: 'goal' } });
@@ -243,84 +230,183 @@ struct HomeView {
       }
       .width('100%')
 
-      Row({ space: 16 }) {
+      Row() {
+        Column({ space: 6 }) {
+          Text('今日减排')
+            .fontSize(12)
+            .fontColor(Theme.TEXT_TERTIARY)
+          Row({ space: 4 }) {
+            Text(DateUtil.gramsToKg(this.displayG))
+              .fontSize(40)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Theme.PRIMARY)
+              .scale({ x: this.heroScale, y: this.heroScale })
+            Text('kg CO₂e')
+              .fontSize(13)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .margin({ bottom: 7 })
+          }
+          .alignItems(VerticalAlign.Bottom)
+
+          // 本月进度迷你条：填补左列留白，与子类型对比条同语言
+          Column({ space: 5 }) {
+            Row() {
+              Text(`本月 ${DateUtil.gramsToKg(this.monthG)} / ${this.monthGoalKg} kg`)
+                .fontSize(11)
+                .fontColor(Theme.TEXT_TERTIARY)
+              Blank()
+              Text(this.monthGoalKg > 0 ? Math.round(this.monthG / (this.monthGoalKg * 1000) * 100) + '%' : '0%')
+                .fontSize(11)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.monthG >= this.monthGoalKg * 1000 ? '#F7BA1E' : Theme.PRIMARY)
+            }
+            .width('100%')
+
+            Stack({ alignContent: Alignment.Start }) {
+              Column()
+                .width('100%')
+                .height(6)
+                .borderRadius(3)
+                .backgroundColor(Theme.BG_GRAY)
+              Column()
+                .width(this.monthGoalKg > 0 ? Math.min(100, Math.round(this.monthG / (this.monthGoalKg * 1000) * 100)) + '%' : '0%')
+                .height(6)
+                .borderRadius(3)
+                .backgroundColor(this.monthG >= this.monthGoalKg * 1000 ? '#F7BA1E' : Theme.PRIMARY)
+            }
+            .width('100%')
+          }
+          .width('100%')
+          .margin({ top: 8 })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+
         GoalRing({
           progress: this.monthGoalKg > 0 ? this.monthG / (this.monthGoalKg * 1000) : 0,
           centerText: (this.monthG / 1000).toFixed(1) + 'kg',
           subText: '目标 ' + this.monthGoalKg + 'kg'
         })
+          .width(150)
+      }
+      .width('100%')
+      .margin({ top: 4 })
+      .alignItems(VerticalAlign.Center)
 
-        Column({ space: 8 }) {
-          Row({ space: 6 }) {
-            Text('达成率')
-              .fontSize(12)
-              .fontColor(Theme.TEXT_TERTIARY)
-            Text(this.monthGoalKg > 0 ? Math.round(this.monthG / (this.monthGoalKg * 1000) * 100) + '%' : '0%')
-              .fontSize(18)
+      Divider()
+        .color(Theme.DIVIDER_LIGHT)
+        .margin({ top: 10 })
+
+      Row() {
+        Column({ space: 2 }) {
+          Row({ space: 4 }) {
+            SymbolGlyph($r('sys.symbol.flame'))
+              .fontSize(15)
+              .fontColor(['#FF7D00'])
+            Text(`${this.streak} 天`)
+              .fontSize(15)
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.monthG >= this.monthGoalKg * 1000 ? '#F7BA1E' : Theme.PRIMARY)
+              .fontColor(Theme.TEXT)
           }
-          if (this.monthG >= this.monthGoalKg * 1000) {
-            Text('目标已达成，太棒了！')
-              .fontSize(13)
-              .fontColor('#F7BA1E')
-          } else {
-            Text(`还差 ${((this.monthGoalKg * 1000 - this.monthG) / 1000).toFixed(1)} kg 达成目标`)
-              .fontSize(13)
-              .fontColor(Theme.TEXT_SECONDARY)
-            Text(this.paceText())
-              .fontSize(11)
-              .fontColor(Theme.TEXT_TERTIARY)
-          }
-          Text('骑行通勤、光盘三餐都能攒进度')
+          .alignItems(VerticalAlign.Center)
+
+          Text('连续打卡')
             .fontSize(11)
             .fontColor(Theme.TEXT_TERTIARY)
         }
-        .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
+        .alignItems(HorizontalAlign.Center)
+
+        Divider()
+          .vertical(true)
+          .height(26)
+          .color(Theme.DIVIDER_LIGHT)
+
+        Column({ space: 2 }) {
+          Row({ space: 4 }) {
+            SymbolGlyph($r('sys.symbol.star'))
+              .fontSize(15)
+              .fontColor(['#F7BA1E'])
+            Text(`${this.balance}`)
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Theme.TEXT)
+          }
+          .alignItems(VerticalAlign.Center)
+
+          Text('碳积分')
+            .fontSize(11)
+            .fontColor(Theme.TEXT_TERTIARY)
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Center)
+
+        Divider()
+          .vertical(true)
+          .height(26)
+          .color(Theme.DIVIDER_LIGHT)
+
+        Column({ space: 2 }) {
+          Row({ space: 4 }) {
+            SymbolGlyph($r('sys.symbol.checkmark_circle'))
+              .fontSize(15)
+              .fontColor(['#3491FA'])
+            Text(`${this.pending}`)
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Theme.TEXT)
+          }
+          .alignItems(VerticalAlign.Center)
+
+          Text('待办任务')
+            .fontSize(11)
+            .fontColor(Theme.TEXT_TERTIARY)
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
-      .alignItems(VerticalAlign.Center)
+      .margin({ top: 10 })
     }
     .width('100%')
-    .padding(14)
-    .borderRadius(16)
-    .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .padding(16)
+    .borderRadius(Theme.R_LARGE)
+    .linearGradient({
+      angle: 180,
+      colors: [['#E7F6EE', 0.0], ['#FFFFFF', 0.5]]
+    })
+    .shadow(Theme.CARD_SHADOW)
   }
 
   @Builder
-  quickEntry(icon: string, label: string, sub: string, bgColor: string, action: () => void) {
+  quickEntry(icon: Resource, label: string, sub: string, bgColor: string, action: () => void) {
     Stack() {
       Column()
         .width('100%')
         .height('100%')
-        .borderRadius(Theme.R_SMALL)
+        .borderRadius(14)
         .backgroundColor(bgColor)
-        .opacity(0.08)
+        .opacity(0.12)
 
-      Column({ space: 2 }) {
-        Text(icon)
-          .fontSize(18)
+      Column({ space: 4 }) {
+        SymbolGlyph(icon)
+          .fontSize(20)
+          .fontColor([bgColor])
 
         Text(label)
           .fontSize(13)
           .fontWeight(FontWeight.Medium)
           .fontColor(Theme.TEXT)
-
-        Text(sub)
-          .fontSize(10)
-          .fontColor(Theme.TEXT_TERTIARY)
       }
       .width('100%')
       .height('100%')
       .justifyContent(FlexAlign.Center)
     }
     .layoutWeight(1)
-    .height(78)
-    .borderRadius(Theme.R_SMALL)
+    .height(72)
+    .borderRadius(14)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
     .onClick(() => {
       action();
     })
@@ -330,32 +416,32 @@ struct HomeView {
   quickSection() {
     Column({ space: 5 }) {
       Row({ space: 5 }) {
-        this.quickEntry('✏️', '行为录入', '记录低碳行为', '#00B96B', (): void => {
+        this.quickEntry($r('sys.symbol.square_and_pencil'), '行为录入', '记录低碳行为', '#00B96B', (): void => {
           AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
         })
-        this.quickEntry('📜', '历史记录', '查询与筛选', '#722ED1', (): void => {
+        this.quickEntry($r('sys.symbol.clock'), '历史记录', '查询与筛选', '#722ED1', (): void => {
           AppStorage.setOrCreate('mainTab', Constants.TAB_HISTORY);
         })
-        this.quickEntry('🎯', '任务中心', '积分与徽章', '#F7BA1E', (): void => {
+        this.quickEntry($r('sys.symbol.calendar'), '任务中心', '积分与徽章', '#F7BA1E', (): void => {
           AppStorage.setOrCreate('mainTab', Constants.TAB_TASKS);
         })
-        this.quickEntry('📚', '双碳科普', '政策与技巧', '#3491FA', (): void => {
+        this.quickEntry($r('sys.symbol.doc_text'), '双碳科普', '政策与技巧', '#3491FA', (): void => {
           router.pushUrl({ url: 'pages/Knowledge' });
         })
       }
       .width('100%')
       // 创新拓展功能入口
       Row({ space: 5 }) {
-        this.quickEntry('📷', '拍照识别', 'AI 自动录入', '#3491FA', (): void => {
+        this.quickEntry($r('sys.symbol.camera'), '拍照识别', 'AI 自动录入', '#3491FA', (): void => {
           router.pushUrl({ url: 'pages/AiRecognize' });
         })
-        this.quickEntry('🎁', '碳普惠', '积分兑权益', '#FF7D00', (): void => {
+        this.quickEntry($r('sys.symbol.gift'), '碳普惠', '积分兑权益', '#FF7D00', (): void => {
           router.pushUrl({ url: 'pages/Inclusive' });
         })
-        this.quickEntry('👨‍👩‍👧', '家庭账户', '多端合并', '#14C9C9', (): void => {
+        this.quickEntry($r('sys.symbol.person'), '家庭账户', '多端合并', '#14C9C9', (): void => {
           router.pushUrl({ url: 'pages/Family' });
         })
-        this.quickEntry('📊', '成果分享', '生成海报', '#722ED1', (): void => {
+        this.quickEntry($r('sys.symbol.share'), '成果分享', '生成海报', '#722ED1', (): void => {
           router.pushUrl({ url: 'pages/ShareCard' });
         })
       }
@@ -397,9 +483,14 @@ struct HomeView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(16)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
+  }
+
+  /** 图例过滤 0 值分类（未产生记录的大类不占位，避免"0%"误导） */
+  private pieShown(): PieItem[] {
+    return this.pie.filter((p: PieItem) => p.value > 0);
   }
 
   /** 分类占比环形图（中心大数字为当期总量） */
@@ -416,16 +507,16 @@ struct HomeView {
           PieChart({ items: this.pie, centerSub: StatsService.kindLabel(this.trendKind) + '总量' })
             .layoutWeight(1)
           Column({ space: 10 }) {
-            ForEach(this.pie, (item: PieItem) => {
+            ForEach(this.pieShown(), (item: PieItem) => {
               Row({ space: 8 }) {
                 Circle({ width: 14, height: 14 }).fill(item.color)
                 Text(item.name)
-                  .fontSize(28)
+                  .fontSize(16)
                   .maxLines(1)
                   .fontColor(Theme.TEXT)
                 Blank()
                 Text(`${item.pct.toFixed(0)}%`)
-                  .fontSize(28)
+                  .fontSize(16)
                   .fontColor(Theme.TEXT_SECONDARY)
               }
               .width('100%')
@@ -453,9 +544,9 @@ struct HomeView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(16)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
   }
 
   /** 减排周报（借鉴运动健康周报） */
@@ -540,9 +631,9 @@ struct HomeView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(16)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
     .onClick(() => {
       // 点击周报卡：跳历史页并预选近7天
       AppStorage.setOrCreate('historyRange', 2);
@@ -617,9 +708,9 @@ struct HomeView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(16)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
   }
 
   /** 待完成任务 */
@@ -672,21 +763,57 @@ struct HomeView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(16)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
   }
 
   build() {
-    Scroll() {
-      Column({ space: 12 }) {
-        this.statCard()
+    Stack({ alignContent: Alignment.TopStart }) {
+      // 顶部浅绿晕染：给标题区一点颜色，不抢白卡
+      Column()
+        .width('100%')
+        .height(190)
+        .linearGradient({
+          angle: 180,
+          colors: [['#D9F1E4', 0.0], ['#ECF6F0', 0.62], [Theme.BG, 1.0]]
+        })
+
+      Scroll() {
+        Column({ space: 12 }) {
+          Row() {
+            Column({ space: 3 }) {
+              Row({ space: 8 }) {
+                Text('碳足迹')
+                  .fontSize(22)
+                  .fontWeight(FontWeight.Bold)
+                Text('低碳每一天')
+                  .fontSize(11)
+                  .fontColor(Theme.PRIMARY)
+                  .backgroundColor(Theme.PRIMARY_BG)
+                  .borderRadius(10)
+                  .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+              }
+              .alignItems(VerticalAlign.Center)
+
+              Text(`${this.greeting()}，${this.nickname}，今天也要低碳哦`)
+                .fontSize(12)
+                .fontColor(Theme.TEXT_TERTIARY)
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+
+            Text(this.todayLabel())
+              .fontSize(13)
+              .fontColor(Theme.TEXT_TERTIARY)
+          }
+          .width('100%')
+
+          this.statCard()
 
         // 卡片顺序可自定义（我的 > 首页布局）
         ForEach(this.cardOrder, (key: string) => {
-          if (key === 'goal') {
-            this.goalCard()
-          } else if (key === 'quick') {
+          if (key === 'quick') {
             this.quickSection()
           } else if (key === 'trend') {
             this.trendCard()
@@ -716,11 +843,17 @@ struct HomeView {
         }
       }
       .width('100%')
-      .padding(14)
+      .padding({ left: 14, right: 14, top: 8, bottom: 14 })
+      .opacity(this.homeReady ? 1 : 0)
+      .translate({ y: this.homeReady ? 0 : 24 })
+      .animation({ duration: 380, curve: Curve.EaseOut })
     }
     .scrollBar(BarState.Off)
     .width('100%')
     .height('100%')
     .align(Alignment.Top)
+    }
+    .width('100%')
+    .height('100%')
   }
 }

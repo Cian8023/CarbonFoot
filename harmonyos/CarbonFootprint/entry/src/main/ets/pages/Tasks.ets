@@ -177,6 +177,7 @@ export struct TasksView {
       Row({ space: 10 }) {
         Progress({ value: p.progress, total: p.target, type: ProgressType.Linear })
           .layoutWeight(1)
+          .style({ strokeWidth: 8 })
           .color(p.done ? Theme.PRIMARY_HOVER : Theme.PRIMARY)
         Text(p.done ? '已达成' : `${p.progress}/${p.target}`)
           .fontSize(12)
@@ -188,9 +189,9 @@ export struct TasksView {
     }
     .width('100%')
     .padding(14)
-    .borderRadius(Theme.R_MEDIUM)
+    .borderRadius(Theme.R_LARGE)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
+    .shadow(Theme.CARD_SHADOW)
     .onClick(() => {
       this.openDetail(p);
     })
@@ -267,8 +268,8 @@ export struct TasksView {
         }
         .width('100%')
         .padding(10)
-        .borderRadius(Theme.R_SMALL)
-        .backgroundColor(Theme.BG)
+        .borderRadius(12)
+        .backgroundColor(Theme.BG_GRAY)
       }, (r: BehaviorRecord) => '' + r.id + '_' + r.value)
     }
     .width('100%')
@@ -285,7 +286,7 @@ export struct TasksView {
         .width(28)
         .height(28)
         .textAlign(TextAlign.Center)
-        .backgroundColor(Theme.BG)
+        .backgroundColor(Theme.BG_GRAY)
         .borderRadius(14)
       Column({ space: 3 }) {
         Text(p.action)
@@ -311,16 +312,15 @@ export struct TasksView {
     }
     .width('100%')
     .padding(12)
-    .borderRadius(Theme.R_SMALL)
+    .borderRadius(16)
     .backgroundColor(Theme.CARD)
-    .border({ width: 1, color: Theme.DIVIDER })
   }
 
   build() {
     Stack() {
     Column({ space: 12 }) {
       Text('任务与积分')
-        .fontSize(20)
+        .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .width('100%')
         .padding({ left: 14, top: 14 })
@@ -341,17 +341,17 @@ export struct TasksView {
         Button('徽章墙与证书')
           .fontSize(13)
           .fontColor(Theme.PRIMARY)
-          .backgroundColor(Theme.CARD)
-          .border({ width: 1, color: Theme.PRIMARY, radius: 18 })
+          .backgroundColor(Theme.PRIMARY_BG)
+          .borderRadius(16)
           .onClick(() => {
             router.pushUrl({ url: 'pages/Badges' });
           })
       }
       .width('100%')
       .padding(16)
-      .borderRadius(Theme.R_MEDIUM)
+      .borderRadius(Theme.R_LARGE)
       .backgroundColor(Theme.CARD)
-      .border({ width: 1, color: Theme.DIVIDER })
+      .shadow(Theme.CARD_SHADOW)
       .margin({ left: 14, right: 14 })
 
       // 分段切换
@@ -359,7 +359,7 @@ export struct TasksView {
         Text('低碳任务')
           .fontSize(14)
           .fontColor(this.segment === 0 ? '#FFFFFF' : Theme.TEXT)
-          .backgroundColor(this.segment === 0 ? Theme.PRIMARY : Theme.CARD)
+          .backgroundColor(this.segment === 0 ? Theme.PRIMARY : Theme.BG_GRAY)
           .borderRadius(16)
           .padding({ left: 16, right: 16, top: 7, bottom: 7 })
           .onClick(() => {
@@ -368,7 +368,7 @@ export struct TasksView {
         Text('积分流水')
           .fontSize(14)
           .fontColor(this.segment === 1 ? '#FFFFFF' : Theme.TEXT)
-          .backgroundColor(this.segment === 1 ? Theme.PRIMARY : Theme.CARD)
+          .backgroundColor(this.segment === 1 ? Theme.PRIMARY : Theme.BG_GRAY)
           .borderRadius(16)
           .padding({ left: 16, right: 16, top: 7, bottom: 7 })
           .onClick(() => {

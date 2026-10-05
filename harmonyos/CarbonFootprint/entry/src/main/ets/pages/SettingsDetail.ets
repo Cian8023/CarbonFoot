@@ -24,8 +24,17 @@ struct SettingsDetail {
   @State aiUrl: string = '';
   @State aiModel: string = '';
   @State inclusiveUrl: string = '';
+  @State goalHighlight: boolean = false;
 
   aboutToAppear(): void {
+    // 首页「修改目标」直达：高亮目标设置区数秒作视觉定位
+    const params = router.getParams() as Record<string, string> | null;
+    if (params !== null && params !== undefined && params['focus'] === 'goal') {
+      this.goalHighlight = true;
+      setTimeout((): void => {
+        this.goalHighlight = false;
+      }, 2500);
+    }
     this.refresh();
   }
 
@@ -129,7 +138,7 @@ struct SettingsDetail {
   private confirmImport(): void {
     AlertDialog.show({
       title: '导入备份',
-      message: '导入将覆盖当前全部行为记录与积分流水（任务完成记录与徽章不受影响），确定继续？',
+      message: '导入将覆盖当前全部行为记录、积分流水、任务完成与徽章解锁状态，确定继续？',
       primaryButton: {
         value: '取消',
         action: () => {
@@ -156,17 +165,28 @@ struct SettingsDetail {
         return;
       }
       const n = await ExportService.importJson(uris[0]);
-      promptAction.showToast({ message: `已恢复 ${n} 条行为记录及对应积分流水`, duration: 3000 });
+      promptAction.showToast({ message: `已恢复 ${n} 条行为记录、积分流水与任务/徽章状态`, duration: 3000 });
       this.refresh();
     } catch (e) {
       promptAction.showToast({ message: '导入失败：文件无效或格式不正确', duration: 3000 });
     }
   }
 
+  private async doClear(): Promise<void> {
+    try {
+      await ExportService.clearAll();
+      bumpTick();
+      promptAction.showToast({ message: '数据已清空' });
+      this.refresh();
+    } catch (e) {
+      promptAction.showToast({ message: '清空失败，请重试' });
+    }
+  }
+
   private confirmClear(): void {
     AlertDialog.show({
       title: '清空所有数据',
-      message: '将删除全部行为记录、积分流水与任务完成记录，徽章将重新锁定。此操作不可恢复，确定继续？',
+      message: '将删除全部行为记录、积分流水与任务完成记录，徽章、植树证书与权益记录将一并重置。此操作不可恢复，确定继续？',
       primaryButton: {
         value: '取消',
         action: () => {
@@ -176,10 +196,7 @@ struct SettingsDetail {
         value: '清空',
         fontColor: Theme.WARN,
         action: () => {
-          ExportService.clearAll();
-          bumpTick();
-          promptAction.showToast({ message: '数据已清空' });
-          this.refresh();
+          this.doClear();
         }
       }
     });
@@ -250,6 +267,8 @@ struct SettingsDetail {
                 .width(90)
                 .height(36)
                 .fontSize(13)
+                .backgroundColor(Theme.BG_GRAY)
+                .borderRadius(10)
                 .onChange((v: string) => {
                   this.monthGoalInput = v;
                 })
@@ -266,9 +285,13 @@ struct SettingsDetail {
           }
           .width('100%')
           .padding(14)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
-          .border({ width: 1, color: Theme.DIVIDER })
+          .shadow(Theme.CARD_SHADOW)
+          .border({
+            width: this.goalHighlight ? 2 : 0,
+            color: Theme.PRIMARY
+          })
 
           // 个性化 · 首页卡片布局
           Column({ space: 10 }) {
@@ -338,9 +361,9 @@ struct SettingsDetail {
           }
           .width('100%')
           .padding(14)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
-          .border({ width: 1, color: Theme.DIVIDER })
+          .shadow(Theme.CARD_SHADOW)
 
           // 服务配置
           Column({ space: 10 }) {
@@ -353,15 +376,23 @@ struct SettingsDetail {
             TextInput({ placeholder: 'sk-...', text: this.aiKey })
               .height(40)
               .type(InputType.NEW_PASSWORD)
+              .backgroundColor(Theme.BG_GRAY)
+              .borderRadius(12)
               .onChange((v: string) => {
                 this.aiKey = v;
               })
+            Text('Key 仅保存在本机偏好（明文存储），演示请勿使用生产密钥')
+              .fontSize(10)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .width('100%')
             Text('模型名（OpenAI 兼容接口的 model 参数）')
               .fontSize(11)
               .fontColor(Theme.TEXT_TERTIARY)
               .width('100%')
             TextInput({ placeholder: 'deepseek-chat', text: this.aiModel })
               .height(40)
+              .backgroundColor(Theme.BG_GRAY)
+              .borderRadius(12)
               .onChange((v: string) => {
                 this.aiModel = v;
               })
@@ -369,6 +400,8 @@ struct SettingsDetail {
               TextInput({ placeholder: '视觉接口地址', text: this.aiUrl })
                 .layoutWeight(1)
                 .height(40)
+                .backgroundColor(Theme.BG_GRAY)
+                .borderRadius(12)
                 .onChange((v: string) => {
                   this.aiUrl = v;
                 })
@@ -394,6 +427,8 @@ struct SettingsDetail {
               TextInput({ placeholder: 'http://服务器:端口', text: this.inclusiveUrl })
                 .layoutWeight(1)
                 .height(40)
+                .backgroundColor(Theme.BG_GRAY)
+                .borderRadius(12)
                 .onChange((v: string) => {
                   this.inclusiveUrl = v;
                 })
@@ -415,9 +450,9 @@ struct SettingsDetail {
           }
           .width('100%')
           .padding(14)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
-          .border({ width: 1, color: Theme.DIVIDER })
+          .shadow(Theme.CARD_SHADOW)
 
           // 本地数据管理
           Column({ space: 2 }) {
@@ -513,9 +548,9 @@ struct SettingsDetail {
           }
           .width('100%')
           .padding(14)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
-          .border({ width: 1, color: Theme.DIVIDER })
+          .shadow(Theme.CARD_SHADOW)
 
           // 关于
           Column({ space: 6 }) {

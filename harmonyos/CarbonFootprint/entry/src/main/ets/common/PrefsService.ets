@@ -7,8 +7,8 @@ const KEY_CERT_DATE: string = 'cert_date';
 const KEY_MONTH_GOAL_KG: string = 'month_goal_kg';
 const KEY_HOME_LAYOUT: string = 'home_layout';
 
-/** 首页可排序卡片的默认顺序 */
-export const DEFAULT_HOME_LAYOUT: string[] = ['goal', 'quick', 'trend', 'pie', 'weekly', 'rec', 'tasks'];
+/** 首页可排序卡片的默认顺序（目标环已并入顶部核心大卡，不再独立排序） */
+export const DEFAULT_HOME_LAYOUT: string[] = ['quick', 'trend', 'pie', 'weekly', 'rec', 'tasks'];
 
 export class PrefsService {
   private static async getStore(): Promise<preferences.Preferences> {
@@ -67,7 +67,7 @@ export class PrefsService {
     await store.flush();
   }
 
-  /** 首页卡片顺序（仅含显示中的卡片），读取时校验并补齐新增卡片 */
+  /** 首页卡片顺序（仅含显示中的卡片）；不再自动补齐，隐藏状态可跨会话保持 */
   static async getHomeLayout(): Promise<string[]> {
     let saved: string[] = [];
     try {
@@ -81,14 +81,14 @@ export class PrefsService {
     }
     const valid: string[] = [];
     for (const k of saved) {
-      if (DEFAULT_HOME_LAYOUT.indexOf(k) >= 0 && valid.indexOf(k) < 0) {
+      // 旧版本布局里的 'goal' 键已并入核心大卡，读取时过滤
+      if (k !== 'goal' && DEFAULT_HOME_LAYOUT.indexOf(k) >= 0 && valid.indexOf(k) < 0) {
         valid.push(k);
       }
     }
-    for (const k of DEFAULT_HOME_LAYOUT) {
-      if (valid.indexOf(k) < 0) {
-        valid.push(k);
-      }
+    // 空布局（首次使用）回落到默认全量
+    if (valid.length === 0) {
+      return DEFAULT_HOME_LAYOUT.slice();
     }
     return valid;
   }

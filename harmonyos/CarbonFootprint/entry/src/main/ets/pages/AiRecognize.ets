@@ -19,6 +19,7 @@ struct AiRecognize {
   @State guess: AiGuess | null = null;
   @State estimateG: number = 0;
   @State estimatePts: number = 0;
+  @State editValue: string = '';
   @State submitting: boolean = false;
 
   private async recognizeUri(uri: string): Promise<void> {
@@ -29,6 +30,7 @@ struct AiRecognize {
       const b64 = await AiRecognizeService.imageToBase64(uri);
       const g = await AiRecognizeService.recognize(b64);
       this.guess = g;
+      this.editValue = '' + g.value;
       this.updateEstimate();
     } catch (e) {
       promptAction.showToast({ message: '识别失败：' + (e as Error).message });
@@ -62,7 +64,9 @@ struct AiRecognize {
       return;
     }
     const g = this.guess as AiGuess;
-    this.estimateG = CalculationService.calculate(g.type, g.subType, g.value);
+    const v = parseFloat(this.editValue);
+    const val = isFinite(v) && v > 0 ? v : 0;
+    this.estimateG = CalculationService.calculate(g.type, g.subType, val);
     this.estimatePts = this.estimateG > 0 ? Math.max(1, Math.floor(this.estimateG / 100)) : 0;
   }
 
@@ -73,11 +77,21 @@ struct AiRecognize {
     const g = this.guess as AiGuess;
     const sub = CalculationService.findSub(g.type, g.subType);
     if (sub === null) {
+      promptAction.showToast({ message: '识别结果不在行为字典中，请重新识别' });
+      return;
+    }
+    const v = parseFloat(this.editValue);
+    if (!isFinite(v) || v <= 0) {
+      promptAction.showToast({ message: '请输入大于 0 的数值' });
+      return;
+    }
+    if (v > sub.max) {
+      promptAction.showToast({ message: `超出单次上限：最多 ${sub.max} ${sub.unit}` });
       return;
     }
     this.submitting = true;
     try {
-      const result = await BehaviorService.submit(g.type, g.subType, g.value, sub.unit,
+      const result = await BehaviorService.submit(g.type, g.subType, v, sub.unit,
         sub.factor, Date.now(), 'AI 拍照识别' + (g.demo ? '（演示）' : ''));
       let msg = `已自动录入！减排 ${DateUtil.gramsToKg(result.grams)} kg，+${result.points} 积分`;
       if (result.newBadges.length > 0) {
@@ -120,7 +134,8 @@ struct AiRecognize {
         Text('设置')
           .fontSize(12)
           .fontColor(Theme.TEXT_TERTIARY)
-          .border({ width: 1, color: Theme.BORDER, radius: 10 })
+          .backgroundColor(Theme.BG_GRAY)
+          .borderRadius(10)
           .padding({ left: 8, right: 8, top: 3, bottom: 3 })
           .onClick(() => {
             this.configApiKey();
@@ -152,11 +167,12 @@ struct AiRecognize {
           }
           .width('100%')
           .padding(20)
-          .borderRadius(16)
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
+          .shadow(Theme.CARD_SHADOW)
 
           Row({ space: 10 }) {
-            Button(this.recognizing ? '识别中…' : '📷 拍照识别')
+            Button(this.recognizing ? '识别中…' : '拍照识别')
               .layoutWeight(1)
               .height(46)
               .fontSize(15)
@@ -165,7 +181,7 @@ struct AiRecognize {
               .onClick(() => {
                 this.shootAndRecognize();
               })
-            Button('🖼 从相册选择')
+            Button('从相册选择')
               .layoutWeight(1)
               .height(46)
               .fontSize(15)
@@ -215,9 +231,24 @@ struct AiRecognize {
                   Text(`${(this.guess as AiGuess).type} · ${(this.guess as AiGuess).subType}`)
                     .fontSize(17)
                     .fontWeight(FontWeight.Medium)
-                  Text(`预估数值：${(this.guess as AiGuess).value} ${(this.guess as AiGuess).unit}`)
-                    .fontSize(12)
-                    .fontColor(Theme.TEXT_TERTIARY)
+                  Row({ space: 8 }) {
+                    Text('数值')
+                      .fontSize(12)
+                      .fontColor(Theme.TEXT_TERTIARY)
+                    TextInput({ text: this.editValue })
+                      .type(InputType.NUMBER_DECIMAL)
+                      .layoutWeight(1)
+                      .height(34)
+                      .fontSize(13)
+                      .onChange((v: string) => {
+                        this.editValue = v;
+                        this.updateEstimate();
+                      })
+                    Text((this.guess as AiGuess).unit)
+                      .fontSize(12)
+                      .fontColor(Theme.TEXT_TERTIARY)
+                  }
+                  .width('100%')
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
@@ -231,7 +262,7 @@ struct AiRecognize {
               }
               .width('100%')
               .padding(10)
-              .borderRadius(10)
+              .borderRadius(14)
               .backgroundColor(Theme.PRIMARY_BG)
 
               Text((this.guess as AiGuess).raw)
@@ -261,8 +292,9 @@ struct AiRecognize {
             }
             .width('100%')
             .padding(14)
-            .borderRadius(16)
+            .borderRadius(Theme.R_LARGE)
             .backgroundColor(Theme.CARD)
+            .shadow(Theme.CARD_SHADOW)
           }
 
           Text('说明：在「我的 > 服务配置」中填入视觉模型 API Key 即可启用在线识别；未配置时使用离线演示识别，链路完整可演示。')

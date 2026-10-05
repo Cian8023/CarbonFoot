@@ -125,7 +125,8 @@ export struct MineView {
                   Text('编辑')
                     .fontSize(11)
                     .fontColor(Theme.PRIMARY)
-                    .border({ width: 1, color: Theme.PRIMARY, radius: 8 })
+                    .backgroundColor(Theme.PRIMARY_BG)
+                    .borderRadius(8)
                     .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                     .onClick(() => {
                       this.nameInput = this.nickname;
@@ -199,9 +200,9 @@ export struct MineView {
         }
         .width('100%')
         .padding(18)
-        .borderRadius(Theme.R_MEDIUM)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
-        .border({ width: 1, color: Theme.DIVIDER })
+        .shadow(Theme.CARD_SHADOW)
 
         // 功能入口
         Column() {
@@ -223,8 +224,9 @@ export struct MineView {
           })
         }
         .width('100%')
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
         .clip(true)
 
         // 创新拓展功能
@@ -261,8 +263,9 @@ export struct MineView {
           })
         }
         .width('100%')
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
         .clip(true)
 
         // 设置入口（个性化 / 服务配置 / 数据管理整合于此）
@@ -272,8 +275,9 @@ export struct MineView {
           })
         }
         .width('100%')
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
         .clip(true)
 
         // 底部声明

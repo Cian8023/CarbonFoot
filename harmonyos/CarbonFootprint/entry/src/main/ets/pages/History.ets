@@ -20,38 +20,6 @@ export interface RecordGroup {
   items: BehaviorRecord[];
 }
 
-/** 分组数据源：顶层按分组懒加载渲染，长列表不一次性铺满 */
-class GroupDataSource implements IDataSource {
-  private groups: RecordGroup[] = [];
-  private listeners: DataChangeListener[] = [];
-
-  setData(groups: RecordGroup[]): void {
-    this.groups = groups;
-    for (const l of this.listeners) {
-      l.onDataReloaded();
-    }
-  }
-
-  totalCount(): number {
-    return this.groups.length;
-  }
-
-  getData(i: number): RecordGroup {
-    return this.groups[i];
-  }
-
-  registerDataChangeListener(l: DataChangeListener): void {
-    this.listeners.push(l);
-  }
-
-  unregisterDataChangeListener(l: DataChangeListener): void {
-    const i = this.listeners.indexOf(l);
-    if (i >= 0) {
-      this.listeners.splice(i, 1);
-    }
-  }
-}
-
 @Component
 export struct HistoryView {
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
@@ -72,7 +40,7 @@ export struct HistoryView {
   @State editTs: number = 0;
   @State recPointsText: string = '';
   @State totalG: number = 0;
-  private groupSrc: GroupDataSource = new GroupDataSource();
+  @State groups: RecordGroup[] = [];
 
   aboutToAppear(): void {
     this.refresh();
@@ -110,8 +78,8 @@ export struct HistoryView {
         }
       }
       this.rawRecords = await BehaviorRepo.query(start, end, this.typeFilter);
-      const items = StatsService.subShare(await BehaviorRepo.all(), start === 0 ? 0 : start);
-      this.bars = items;
+      // 子类型对比直接复用本次区间查询结果，不再额外全表扫描
+      this.bars = StatsService.subShare(this.rawRecords, 0);
       this.applyFilter();
     } catch (e) {
       console.error('HistoryView refresh error: ' + JSON.stringify(e));
@@ -131,7 +99,7 @@ export struct HistoryView {
       sum += r.reductionG;
     }
     this.totalG = sum;
-    this.groupSrc.setData(this.buildGroups(list));
+    this.groups = this.buildGroups(list);
   }
 
   private buildGroups(list: BehaviorRecord[]): RecordGroup[] {
@@ -398,27 +366,45 @@ export struct HistoryView {
     Scroll() {
     Column({ space: 12 }) {
       Text('历史记录')
-        .fontSize(20)
+        .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .width('100%')
         .padding({ left: 14, top: 14 })
 
       // 筛选
       Column({ space: 10 }) {
-        TextInput({ placeholder: '搜索子类型或备注' })
-          .height(36)
-          .fontSize(13)
-          .onChange((v: string) => {
-            this.keyword = v;
-            this.applyFilter();
-          })
+        // 关键字输入只暂存，点击搜索按钮（或键盘回车）才过滤
+        Row({ space: 8 }) {
+          TextInput({ placeholder: '搜索子类型或备注' })
+            .height(36)
+            .fontSize(13)
+            .layoutWeight(1)
+            .backgroundColor(Theme.BG_GRAY)
+            .borderRadius(12)
+            .onChange((v: string) => {
+              this.keyword = v;
+            })
+            .onSubmit(() => {
+              this.applyFilter();
+            })
+          Button('搜索')
+            .height(36)
+            .fontSize(13)
+            .backgroundColor(Theme.PRIMARY)
+            .borderRadius(12)
+            .padding({ left: 14, right: 14 })
+            .onClick(() => {
+              this.applyFilter();
+            })
+        }
+        .width('100%')
 
         Row({ space: 8 }) {
           ForEach(RANGES, (r: string, idx: number) => {
             Text(r)
               .fontSize(12)
               .fontColor(this.rangeIndex === idx ? '#FFFFFF' : Theme.TEXT)
-              .backgroundColor(this.rangeIndex === idx ? Theme.PRIMARY : Theme.CARD)
+              .backgroundColor(this.rangeIndex === idx ? Theme.PRIMARY : Theme.BG_GRAY)
               .borderRadius(14)
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .onClick(() => {
@@ -434,25 +420,32 @@ export struct HistoryView {
         .width('100%')
 
         if (this.rangeIndex === 4) {
-          Row({ space: 8 }) {
-            Text('起')
-              .fontSize(12)
-              .fontColor(Theme.TEXT_TERTIARY)
-            CalendarPicker({ selected: new Date(this.customStart) })
-              .onChange((date: Date) => {
-                this.customStart = DateUtil.startOfDay(date.getTime());
-                this.refresh();
+          // key 随起止变化：约束变化时重建日历，保证灰显范围始终最新
+          ForEach([this.customStart + '_' + this.customEnd], (_k: string) => {
+            Row({ space: 8 }) {
+              Text('起')
+                .fontSize(12)
+                .fontColor(Theme.TEXT_TERTIARY)
+              CalendarPicker({ selected: new Date(this.customStart), end: new Date(this.customEnd) })
+                .onChange((date: Date) => {
+                  this.customStart = DateUtil.startOfDay(date.getTime());
+                  this.refresh();
+                })
+              Text('止')
+                .fontSize(12)
+                .fontColor(Theme.TEXT_TERTIARY)
+              CalendarPicker({
+                selected: new Date(this.customEnd),
+                start: new Date(this.customStart),
+                end: new Date(DateUtil.startOfDay(Date.now()))
               })
-            Text('止')
-              .fontSize(12)
-              .fontColor(Theme.TEXT_TERTIARY)
-            CalendarPicker({ selected: new Date(this.customEnd) })
-              .onChange((date: Date) => {
-                this.customEnd = DateUtil.startOfDay(date.getTime());
-                this.refresh();
-              })
-          }
-          .width('100%')
+                .onChange((date: Date) => {
+                  this.customEnd = DateUtil.startOfDay(date.getTime());
+                  this.refresh();
+                })
+            }
+            .width('100%')
+          }, (k: string) => k)
         }
 
         Row({ space: 8 }) {
@@ -460,7 +453,7 @@ export struct HistoryView {
             Text(t)
               .fontSize(12)
               .fontColor(this.typeFilter === t ? '#FFFFFF' : Theme.TEXT)
-              .backgroundColor(this.typeFilter === t ? Theme.PRIMARY : Theme.CARD)
+              .backgroundColor(this.typeFilter === t ? Theme.PRIMARY : Theme.BG_GRAY)
               .borderRadius(14)
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .onClick(() => {
@@ -474,75 +467,69 @@ export struct HistoryView {
       .width('100%')
       .padding({ left: 14, right: 14 })
 
-      List({ space: 12 }) {
-        LazyForEach(this.groupSrc, (g: RecordGroup) => {
-          ListItem() {
-            Column({ space: 8 }) {
-              Row() {
-                Text(g.label)
-                  .fontSize(28)
-                  .fontColor(Theme.TEXT)
-                  .backgroundColor(Theme.BG)
-                  .borderRadius(16)
-                  .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-              }
-              .width('100%')
-              ForEach(g.items, (r: BehaviorRecord) => {
-                Row({ space: 12 }) {
-                  Column()
-                    .width(3)
-                    .height(34)
-                    .borderRadius(2)
-                    .backgroundColor(Theme.PRIMARY_HOVER)
-                  Column({ space: 4 }) {
-                    Text(`${r.subType} ${r.value}${r.unit}`)
-                      .fontSize(28)
-                      .fontWeight(FontWeight.Medium)
-                      .maxLines(1)
-                      .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    Text(DateUtil.formatMDHM(r.createdAt) + (r.note !== '' ? ' · ' + r.note : ''))
-                      .fontSize(28)
-                      .fontColor(Theme.TEXT_TERTIARY)
-                      .maxLines(1)
-                      .textOverflow({ overflow: TextOverflow.Ellipsis })
-                  }
-                  .alignItems(HorizontalAlign.Start)
-                  .layoutWeight(1)
-                  Text(`-${(r.reductionG / 1000).toFixed(2)}kg`)
-                    .fontSize(28)
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor(Theme.REDUCE)
-                }
-                .width('100%')
-                .padding(12)
-                .borderRadius(Theme.R_SMALL)
-                .backgroundColor(Theme.CARD)
-                .border({ width: 1, color: Theme.DIVIDER })
-                .onClick(() => {
-                  this.openDetail(r);
-                })
-              }, (r: BehaviorRecord) => '' + r.id + '_' + r.note + '_' + r.value)
+      // 记录列表：直接铺在整页 Scroll 里，随页面一起滚动
+      Column({ space: 12 }) {
+        ForEach(this.groups, (g: RecordGroup) => {
+          Column({ space: 8 }) {
+            Row() {
+              Text(g.label)
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(Theme.TEXT)
+                .backgroundColor(Theme.BG_GRAY)
+                .borderRadius(18)
+                .padding({ left: 20, right: 20, top: 8, bottom: 8 })
             }
             .width('100%')
+            ForEach(g.items, (r: BehaviorRecord) => {
+              Row({ space: 12 }) {
+                Column()
+                  .width(3)
+                  .height(34)
+                  .borderRadius(2)
+                  .backgroundColor(Theme.PRIMARY_HOVER)
+                Column({ space: 4 }) {
+                  Text(`${r.subType} ${r.value}${r.unit}`)
+                    .fontSize(16)
+                    .fontWeight(FontWeight.Medium)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  Text(DateUtil.formatMDHM(r.createdAt) + (r.note !== '' ? ' · ' + r.note : ''))
+                    .fontSize(13)
+                    .fontColor(Theme.TEXT_TERTIARY)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                }
+                .alignItems(HorizontalAlign.Start)
+                .layoutWeight(1)
+                Text(`-${(r.reductionG / 1000).toFixed(2)}kg`)
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(Theme.REDUCE)
+              }
+              .width('100%')
+              .padding(14)
+              .borderRadius(16)
+              .backgroundColor(Theme.CARD)
+              .shadow(Theme.CARD_SHADOW)
+              .onClick(() => {
+                this.openDetail(r);
+              })
+            }, (r: BehaviorRecord) => '' + r.id + '_' + r.note + '_' + r.value)
           }
+          .width('100%')
         }, (g: RecordGroup) => g.label + '#' + g.items.length)
       }
       .width('100%')
       .padding({ left: 14, right: 14 })
-      .height(this.records.length * 128 + 24)
-      .bindSheet(this.showSheet, this.detailSheet(), {
-        height: 600,
-        showClose: false,
-        onDisappear: () => {
-          this.showSheet = false;
-        }
-      })
 
       if (this.records.length === 0) {
         EmptyState({
           icon: '',
-          title: '暂无记录',
-          desc: '当前筛选条件下没有低碳行为记录',
+          title: this.keyword.trim() === '' ? '暂无记录' : '没有匹配的记录',
+          desc: this.keyword.trim() === ''
+            ? '当前筛选条件下没有低碳行为记录'
+            : `未找到包含「${this.keyword.trim()}」的记录，换个关键词试试`,
           buttonText: '去记录',
           onButton: (): void => {
             AppStorage.setOrCreate('mainTab', 1);
@@ -554,18 +541,27 @@ export struct HistoryView {
       if (this.bars.length > 0) {
         Column({ space: 10 }) {
           Text('子类型减排对比（当期）')
-            .fontSize(14)
+            .fontSize(16)
             .fontWeight(FontWeight.Medium)
+            .width('100%')
           BarChart({ items: this.bars })
         }
         .width('100%')
         .margin({ left: 14, right: 14, bottom: 12 })
         .padding(14)
-        .borderRadius(16)
+        .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
+        .shadow(Theme.CARD_SHADOW)
       }
     }
     .width('100%')
+    .bindSheet(this.showSheet, this.detailSheet(), {
+      height: 600,
+      showClose: false,
+      onDisappear: () => {
+        this.showSheet = false;
+      }
+    })
     }
     .scrollBar(BarState.Auto)
     .width('100%')

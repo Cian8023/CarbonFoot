@@ -5,7 +5,8 @@ import {
   PointsRecord,
   TaskDef,
   BadgeDef,
-  TaskCheck
+  TaskCheck,
+  TaskCompletionRecord
 } from '../model/Models';
 
 function rowToBehavior(rs: relationalStore.ResultSet): BehaviorRecord {
@@ -288,6 +289,19 @@ export class PointsRepo {
     return n > 0;
   }
 
+  /** 某来源全部关联 id（批量去重判断场景用） */
+  static async listRefsBySource(source: string): Promise<number[]> {
+    const pred = new relationalStore.RdbPredicates('t_points_record');
+    pred.equalTo('source', source);
+    const rs = await DBHelper.get().query(pred);
+    const refs: number[] = [];
+    while (rs.goToNextRow()) {
+      refs.push(rs.getLong(rs.getColumnIndex('ref_id')));
+    }
+    rs.close();
+    return refs;
+  }
+
   /** 某条行为记录关联的全部积分流水（发放/修改补正/删除冲减） */
   static async listBySourceRef(source: string, refId: number): Promise<PointsRecord[]> {
     const pred = new relationalStore.RdbPredicates('t_points_record');
@@ -400,6 +414,22 @@ export class TaskRepo {
     return n;
   }
 
+  /** 全部任务完成记录（备份/恢复用） */
+  static async listAllCompletions(): Promise<TaskCompletionRecord[]> {
+    const pred = new relationalStore.RdbPredicates('t_task_completion');
+    pred.orderByAsc('id');
+    const rs = await DBHelper.get().query(pred);
+    const list: TaskCompletionRecord[] = [];
+    while (rs.goToNextRow()) {
+      list.push({
+        taskId: rs.getLong(rs.getColumnIndex('task_id')),
+        completedAt: rs.getLong(rs.getColumnIndex('completed_at'))
+      });
+    }
+    rs.close();
+    return list;
+  }
+
   /** 撤销某任务在周期内的完成记录（任务回退用） */
   static async deleteCompletionsBetween(taskId: number, startTs: number, endTs: number): Promise<void> {
     const pred = new relationalStore.RdbPredicates('t_task_completion');
@@ -450,6 +480,15 @@ export class BadgeRepo {
     const exists = rs.rowCount > 0;
     rs.close();
     if (exists) {
+      // 徽章种子修订（如图标矢量化）同步应用到已安装环境，解锁状态不受影响
+      const upd: relationalStore.ValuesBucket = {
+        'name': name,
+        'icon': icon,
+        'condition_type': conditionType,
+        'condition_value': conditionValue,
+        'description': description
+      };
+      await DBHelper.get().update(upd, pred);
       return;
     }
     const bucket: relationalStore.ValuesBucket = {

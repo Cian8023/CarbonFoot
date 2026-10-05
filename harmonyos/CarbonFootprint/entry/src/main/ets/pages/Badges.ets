@@ -8,6 +8,7 @@ import { Constants, bumpTick } from '../common/Constants';
 import { Theme } from '../common/Theme';
 import { BadgeDef } from '../model/Models';
 import { BadgeService, BadgeProgressData } from '../service/BadgeService';
+import { fpFont } from '../components/Chart';
 import { PointsService } from '../service/PointsService';
 import { BehaviorRepo } from '../db/Repository';
 import { PrefsService } from '../common/PrefsService';
@@ -29,6 +30,18 @@ struct Badges {
   @State selProgress: BadgeProgressData | null = null;
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private certCtx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
+  /** 徽章图标名 → 系统矢量符号（badges.json icon 字段） */
+  private badgeSymbols: Record<string, Resource> = {
+    'leaf': $r('sys.symbol.leaf'),
+    'medal': $r('sys.symbol.medal'),
+    'rosette': $r('sys.symbol.rosette'),
+    'flame': $r('sys.symbol.flame'),
+    'calendar': $r('sys.symbol.calendar'),
+    'star': $r('sys.symbol.star'),
+    'checkmark_circle': $r('sys.symbol.checkmark_circle'),
+    'book': $r('sys.symbol.book'),
+    'flag': $r('sys.symbol.flag')
+  };
 
   aboutToAppear(): void {
     this.refresh();
@@ -52,6 +65,19 @@ struct Badges {
       this.progressArr = await BadgeService.progressList(this.badges);
     } catch (e) {
       console.error('Badges refresh error: ' + JSON.stringify(e));
+    }
+  }
+
+  @Builder
+  badgeGlyph(icon: string, size: number, unlocked: boolean) {
+    if (this.badgeSymbols[icon] !== undefined) {
+      SymbolGlyph(this.badgeSymbols[icon])
+        .fontSize(size)
+        .fontColor([unlocked ? Theme.PRIMARY : Theme.TEXT_TERTIARY])
+    } else {
+      Text(icon)
+        .fontSize(size)
+        .fontColor(unlocked ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
     }
   }
 
@@ -115,21 +141,21 @@ struct Badges {
     this.certCtx.lineWidth = 1;
     this.certCtx.strokeRect(12, 12, w - 24, h - 24);
     this.certCtx.textAlign = 'center';
-    // 标题
+    // 标题（Canvas 字号按密度换算，屏显与导出 PNG 均为高清比例）
     this.certCtx.fillStyle = Theme.PRIMARY;
-    this.certCtx.font = 'bold 30px sans-serif';
+    this.certCtx.font = 'bold ' + fpFont(30) + ' sans-serif';
     this.certCtx.fillText('植 树 证 书', w / 2, 70);
-    this.certCtx.font = '11px sans-serif';
+    this.certCtx.font = fpFont(11);
     this.certCtx.fillStyle = '#8A8A6A';
     this.certCtx.fillText('T R E E   P L A N T I N G   C E R T I F I C A T E', w / 2, 92);
     // 正文
     this.certCtx.fillStyle = '#3A4A3A';
-    this.certCtx.font = '14px sans-serif';
+    this.certCtx.font = fpFont(14);
     this.certCtx.fillText('兹证明', w / 2, 130);
-    this.certCtx.font = 'bold 24px sans-serif';
+    this.certCtx.font = 'bold ' + fpFont(24) + ' sans-serif';
     this.certCtx.fillStyle = Theme.TEXT;
     this.certCtx.fillText(this.nickname, w / 2, 165);
-    this.certCtx.font = '14px sans-serif';
+    this.certCtx.font = fpFont(14);
     this.certCtx.fillStyle = '#3A4A3A';
     this.certCtx.fillText(`通过「碳足迹」应用累计减排 ${this.totalKg} kg CO₂e`, w / 2, 200);
     this.certCtx.fillText(`于 ${DateUtil.formatYMD(this.certDate)} 兑换电子植树证书一份`, w / 2, 224);
@@ -150,7 +176,7 @@ struct Badges {
       this.certCtx.fillRect(cx - 2, 292 - 2, 4, 8);
     }
     // 落款
-    this.certCtx.font = '12px sans-serif';
+    this.certCtx.font = fpFont(12);
     this.certCtx.fillStyle = '#8A8A6A';
     this.certCtx.fillText('碳足迹 · 全民绿色生活碳积分与减排指南', w / 2, h - 44);
     this.certCtx.fillText(`证书编号：CF-${this.certDate}`, w / 2, h - 24);
@@ -191,13 +217,14 @@ struct Badges {
 
       if (this.selBadge !== null) {
         Row({ space: 14 }) {
-          Text((this.selBadge as BadgeDef).unlocked ? (this.selBadge as BadgeDef).icon : '—')
-            .fontSize(30)
-            .width(64)
-            .height(64)
-            .textAlign(TextAlign.Center)
-            .backgroundColor((this.selBadge as BadgeDef).unlocked ? '#EAF1E3' : '#F1F1ED')
-            .borderRadius(10)
+          Column() {
+            this.badgeGlyph((this.selBadge as BadgeDef).icon, 30, (this.selBadge as BadgeDef).unlocked)
+          }
+          .width(64)
+          .height(64)
+          .justifyContent(FlexAlign.Center)
+          .backgroundColor((this.selBadge as BadgeDef).unlocked ? '#EAF1E3' : '#F1F1ED')
+          .borderRadius(10)
           Column({ space: 6 }) {
             Text((this.selBadge as BadgeDef).name)
               .fontSize(18)
@@ -268,7 +295,7 @@ struct Badges {
       .width('100%')
       .height(52)
       .padding({ left: 14, right: 14 })
-      .border({ width: { bottom: 1 }, color: Theme.DIVIDER })
+      .border({ width: { bottom: 1 }, color: Theme.DIVIDER_LIGHT })
 
       Scroll() {
         Column({ space: 20 }) {
@@ -306,15 +333,14 @@ struct Badges {
               ForEach(this.badges, (b: BadgeDef) => {
                 Column({ space: 7 }) {
                   Row() {
-                    Text(b.unlocked ? b.icon : '—')
-                      .fontSize(18)
-                      .fontWeight(FontWeight.Medium)
-                      .fontColor(b.unlocked ? Theme.PRIMARY : Theme.TEXT_TERTIARY)
-                      .width(38)
-                      .height(38)
-                      .textAlign(TextAlign.Center)
-                      .backgroundColor(b.unlocked ? '#EAF1E3' : '#F1F1ED')
-                      .borderRadius(6)
+                    Column() {
+                      this.badgeGlyph(b.icon, 20, b.unlocked)
+                    }
+                    .width(38)
+                    .height(38)
+                    .justifyContent(FlexAlign.Center)
+                    .backgroundColor(b.unlocked ? '#EAF1E3' : '#F1F1ED')
+                    .borderRadius(8)
 
                     Blank()
 
@@ -365,11 +391,8 @@ struct Badges {
                 .padding(12)
                 .margin({ bottom: 10 })
                 .backgroundColor(b.unlocked ? '#FBFCF8' : '#F7F7F4')
-                .border({
-                  width: 1,
-                  color: b.unlocked ? '#DCE6D2' : Theme.DIVIDER
-                })
-                .borderRadius(6)
+                .shadow(Theme.CARD_SHADOW)
+                .borderRadius(14)
                 .opacity(b.unlocked ? 1 : 0.72)
                 .onClick(() => {
                   this.openBadgeDetail(b, this.badges.indexOf(b));
@@ -380,7 +403,10 @@ struct Badges {
           }
           .width('100%')
           .padding({ left: 16, right: 16, top: 16, bottom: 6 })
+          .margin({ left: 14, right: 14, top: 14 })
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
+          .shadow(Theme.CARD_SHADOW)
 
           // 证书区域
           Column({ space: 14 }) {
@@ -498,7 +524,7 @@ struct Badges {
                   .fontSize(14)
                   .fontColor(this.balance >= Constants.CERT_COST ? '#FFFFFF' : Theme.TEXT_TERTIARY)
                   .backgroundColor(this.balance >= Constants.CERT_COST ? Theme.PRIMARY : '#E6E6E1')
-                  .borderRadius(4)
+                  .borderRadius(12)
                   .onClick(() => {
                     this.exchangeCert();
                   })
@@ -509,7 +535,10 @@ struct Badges {
           }
           .width('100%')
           .padding(16)
+          .margin({ left: 14, right: 14, top: 14, bottom: 20 })
+          .borderRadius(Theme.R_LARGE)
           .backgroundColor(Theme.CARD)
+          .shadow(Theme.CARD_SHADOW)
         }
         .width('100%')
         .padding({ top: 14, bottom: 24 })

@@ -51,6 +51,11 @@ export class PointsService {
     return await PointsRepo.hasSourceRef(source, refId);
   }
 
+  /** 某来源全部关联 id（一次查回，替代逐条 hasSourceRef） */
+  static async listSourceRefs(source: string): Promise<number[]> {
+    return await PointsRepo.listRefsBySource(source);
+  }
+
   static async listBySourceRef(source: string, refId: number): Promise<PointsRecord[]> {
     return await PointsRepo.listBySourceRef(source, refId);
   }

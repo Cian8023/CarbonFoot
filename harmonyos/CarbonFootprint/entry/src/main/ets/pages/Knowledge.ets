@@ -23,9 +23,11 @@ struct Knowledge {
     try {
       await AppInit.ensure();
       this.articles = KnowledgeService.list(this.category);
+      // 一次查回全部已读 ref，替代逐篇查询
+      const refs = await PointsService.listSourceRefs('read');
       const ids: number[] = [];
       for (const a of KnowledgeService.list('全部')) {
-        if (await PointsService.hasSourceRef('read', a.id)) {
+        if (refs.indexOf(a.id) >= 0) {
           ids.push(a.id);
         }
       }
@@ -49,7 +51,7 @@ struct Knowledge {
           })
         Blank()
         Text('双碳科普专栏')
-          .fontSize(18)
+          .fontSize(20)
           .fontWeight(FontWeight.Bold)
         Blank()
         Text('')
@@ -64,7 +66,7 @@ struct Knowledge {
           Text(c)
             .fontSize(12)
             .fontColor(this.category === c ? '#FFFFFF' : Theme.TEXT)
-            .backgroundColor(this.category === c ? Theme.PRIMARY : Theme.CARD)
+            .backgroundColor(this.category === c ? Theme.PRIMARY : Theme.BG_GRAY)
             .borderRadius(14)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .onClick(() => {
@@ -92,9 +94,9 @@ struct Knowledge {
       }
       .width('100%')
       .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-      .borderRadius(Theme.R_SMALL)
+      .borderRadius(16)
       .backgroundColor(Theme.CARD)
-      .border({ width: 1, color: Theme.DIVIDER })
+      .shadow(Theme.CARD_SHADOW)
       .margin({ left: 14, right: 14 })
 
       List({ space: 10 }) {
@@ -139,9 +141,9 @@ struct Knowledge {
             }
             .width('100%')
             .padding(12)
-            .borderRadius(Theme.R_SMALL)
+            .borderRadius(16)
             .backgroundColor(Theme.CARD)
-            .border({ width: 1, color: Theme.DIVIDER })
+            .shadow(Theme.CARD_SHADOW)
             .onClick(() => {
               router.pushUrl({ url: 'pages/KnowledgeDetail', params: { id: a.id } });
             })

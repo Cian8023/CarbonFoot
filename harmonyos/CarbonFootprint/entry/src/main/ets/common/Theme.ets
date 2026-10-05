@@ -17,7 +17,7 @@ export class Theme {
   static readonly POINTS: string = '#F7BA1E';
   
   // === 中性色 ===
-  static readonly BG: string = '#F7F8FA';
+  static readonly BG: string = '#F4F6F6';
   static readonly BG_GRAY: string = '#F2F3F5';
   static readonly CARD: string = '#FFFFFF';
   static readonly CARD_HOVER: string = '#FAFAFA';
@@ -47,11 +47,28 @@ export class Theme {
   static readonly SPACE_LARGE: number = 16;
   static readonly SPACE_XLARGE: number = 20;
   static readonly SPACE_XXLARGE: number = 24;
+
+  // === 字号规范（fp，新代码优先使用，逐步替换页面硬编码）===
+  static readonly FS_CAPTION: number = 10;
+  static readonly FS_TERTIARY: number = 11;
+  static readonly FS_SECONDARY: number = 12;
+  static readonly FS_BODY: number = 13;
+  static readonly FS_CONTENT: number = 14;
+  static readonly FS_TITLE: number = 16;
+  static readonly FS_HEAD: number = 19;
+  static readonly FS_DISPLAY: number = 30;
   
   // === 阴影 ===
   static readonly SHADOW_CARD: string = '0 2px 8px 0 rgba(0, 0, 0, 0.08)';
   static readonly SHADOW_HOVER: string = '0 4px 16px 0 rgba(0, 0, 0, 0.12)';
   static readonly SHADOW_FLOAT: string = '0 8px 24px 0 rgba(0, 0, 0, 0.16)';
+  /** 大厂卡片通用轻阴影：去边框 + 大圆角 + 浮起感（配合 R_LARGE 使用） */
+  static readonly CARD_SHADOW: ShadowOptions = {
+    radius: 14,
+    color: 'rgba(23, 43, 33, 0.06)',
+    offsetX: 0,
+    offsetY: 4
+  };
   
   // === 图表配色（柔和渐进） ===
   static readonly CHART_COLORS: string[] = [

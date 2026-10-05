@@ -58,8 +58,9 @@ export struct BadgeUnlockOverlay {
           Circle({ width: 96, height: 96 })
             .fill('#F7BA1E')
             .opacity(0.9 * this.glowOpacity)
-          Text('🏅')
-            .fontSize(46)
+          SymbolGlyph($r('sys.symbol.rosette'))
+            .fontSize(42)
+            .fontColor(['#FFFFFF'])
         }
         .scale({ x: this.badgeScale, y: this.badgeScale })
 
