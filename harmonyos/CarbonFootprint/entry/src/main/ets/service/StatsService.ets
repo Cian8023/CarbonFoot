@@ -97,9 +97,9 @@ export class StatsService {
     if (kind === 'day7') {
       return '近7天';
     } else if (kind === 'week8') {
-      return '近8周';
+      return '近4周';
     } else if (kind === 'month12') {
-      return '近12月';
+      return '近6月';
     }
     return '近5年';
   }
@@ -121,10 +121,10 @@ export class StatsService {
     if (kind === 'day7') {
       return DateUtil.startOfDay(now) - 6 * DateUtil.DAY_MS;
     } else if (kind === 'week8') {
-      return DateUtil.startOfWeek(now) - 7 * DateUtil.DAY_MS * 7;
+      return DateUtil.startOfWeek(now) - 3 * DateUtil.DAY_MS * 7;
     } else if (kind === 'month12') {
       const d = new Date(DateUtil.startOfMonth(now));
-      d.setMonth(d.getMonth() - 11);
+      d.setMonth(d.getMonth() - 5);
       return d.getTime();
     }
     const dy = new Date(DateUtil.startOfYear(now));
@@ -145,17 +145,29 @@ export class StatsService {
       n = 7;
       stepMs = DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfDay;
-      labelFn = (ts: number): string => new Date(ts).getDate() + '日';
+      labelFn = (ts: number): string => {
+        const d = new Date(ts);
+        return (d.getMonth() + 1) + '.' + d.getDate();
+      };
     } else if (kind === 'week8') {
-      n = 8;
+      n = 4;
       stepMs = 7 * DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfWeek;
-      labelFn = (ts: number): string => new Date(ts).getDate() + '日';
+      labelFn = (ts: number): string => {
+        // 纯数字区间：M.D-M.D，跨月/跨年都各自带上自己的月份
+        const endTs = ts + 6 * DateUtil.DAY_MS;
+        const sd = new Date(ts);
+        const ed = new Date(endTs);
+        return (sd.getMonth() + 1) + '.' + sd.getDate() + '-' + (ed.getMonth() + 1) + '.' + ed.getDate();
+      };
     } else if (kind === 'month12') {
-      n = 12;
+      n = 6;
       stepMs = 30 * DateUtil.DAY_MS;
       bucketStart = DateUtil.startOfMonth;
-      labelFn = (ts: number): string => (new Date(ts).getMonth() + 1) + '月';
+      labelFn = (ts: number): string => {
+        const d = new Date(ts);
+        return d.getFullYear() + '.' + (d.getMonth() + 1);
+      };
     } else {
       n = 5;
       stepMs = 365 * DateUtil.DAY_MS;

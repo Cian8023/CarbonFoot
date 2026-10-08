@@ -28,6 +28,8 @@ export struct TasksView {
   @State weekDaysLeft: number = 7;
   @State flowSource: string = '全部';
   @State flowLimit: number = 50;
+  @State flowLoading: boolean = false;
+  private flowRequestId: number = 0;
   @State detailTask: TaskProgress | null = null;
   @State showDetail: boolean = false;
   @State detailRule: string = '';
@@ -39,6 +41,95 @@ export struct TasksView {
 
   aboutToAppear(): void {
     this.refresh();
+  }
+
+  private showExchangeMenu(): void {
+    AlertDialog.show({
+      title: '选择兑换页面',
+      message: '选择要前往的兑换页面',
+      primaryButton: {
+        value: '碳普惠权益',
+        action: () => {
+          router.pushUrl({ url: 'pages/Inclusive' });
+        }
+      },
+      secondaryButton: {
+        value: '徽章与证书',
+        action: () => {
+          router.pushUrl({ url: 'pages/Badges' });
+        }
+      }
+    });
+  }
+
+  private emptyFlowTitle(): string {
+    if (this.flowSource === 'behavior') {
+      return '还没有低碳行为积分';
+    }
+    if (this.flowSource === 'task') {
+      return '还没有任务奖励积分';
+    }
+    if (this.flowSource === 'read') {
+      return '还没有阅读奖励积分';
+    }
+    if (this.flowSource === 'exchange') {
+      return '还没有积分兑换记录';
+    }
+    return '还没有积分流水';
+  }
+
+  private emptyFlowDesc(): string {
+    if (this.flowSource === 'behavior') {
+      return '记录低碳行为后即可获得积分';
+    }
+    if (this.flowSource === 'task') {
+      return '完成低碳任务后即可获得积分';
+    }
+    if (this.flowSource === 'read') {
+      return '阅读双碳科普文章后即可获得积分';
+    }
+    if (this.flowSource === 'exchange') {
+      return '积分可以兑换碳普惠权益或徽章证书';
+    }
+    return '记录低碳行为、完成任务、阅读科普都可以获得积分';
+  }
+
+  private emptyFlowButton(): string {
+    if (this.flowSource === 'behavior') {
+      return '去录入';
+    }
+    if (this.flowSource === 'task') {
+      return '去低碳任务';
+    }
+    if (this.flowSource === 'read') {
+      return '去读科普';
+    }
+    if (this.flowSource === 'exchange') {
+      return '去兑换';
+    }
+    return '';
+  }
+
+  private openEmptyFlowAction(): void {
+    if (this.flowSource === 'behavior') {
+      AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
+      return;
+    }
+    if (this.flowSource === 'task') {
+      this.segment = 0;
+      return;
+    }
+    if (this.flowSource === 'read') {
+      router.pushUrl({ url: 'pages/Knowledge' });
+      return;
+    }
+    if (this.flowSource === 'exchange') {
+      this.showExchangeMenu();
+    }
+  }
+
+  private hasEmptyFlowAction(): boolean {
+    return this.flowSource !== '全部';
   }
 
   async refresh(): Promise<void> {
@@ -71,14 +162,30 @@ export struct TasksView {
     }
   }
 
-  private async loadFlow(): Promise<void> {
-    this.flow = await PointsService.listPaged(this.flowSource, this.flowLimit);
+  private async loadFlow(source: string = this.flowSource): Promise<void> {
+    const requestId: number = ++this.flowRequestId;
+    this.flowLoading = true;
+    this.flow = [];
+    try {
+      const result: PointsRecord[] = await PointsService.listPaged(source, this.flowLimit);
+      if (requestId === this.flowRequestId && this.flowSource === source) {
+        this.flow = result;
+      }
+    } finally {
+      if (requestId === this.flowRequestId && this.flowSource === source) {
+        this.flowLoading = false;
+      }
+    }
   }
 
   private async changeSource(src: string): Promise<void> {
+    // 失效所有旧请求，并立即清空旧筛选内容。
+    this.flowRequestId++;
     this.flowSource = src;
+    this.flow = [];
+    this.flowLoading = true;
     this.flowLimit = 50;
-    await this.loadFlow();
+    await this.loadFlow(src);
   }
 
   private async loadMore(): Promise<void> {
@@ -412,58 +519,67 @@ export struct TasksView {
         .padding({ left: 14, right: 14, bottom: 14 })
       } else {
         // 来源筛选
-        Row({ space: 6 }) {
-          ForEach(SOURCES, (s: string) => {
-            Text(this.sourceChipLabel(s))
-              .fontSize(11)
-              .fontColor(this.flowSource === s ? '#FFFFFF' : Theme.TEXT)
-              .backgroundColor(this.flowSource === s ? Theme.PRIMARY : Theme.CARD)
-              .borderRadius(12)
-              .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+        Scroll() {
+          Row({ space: 8 }) {
+            ForEach(SOURCES, (s: string) => {
+              Text(this.sourceChipLabel(s))
+                .fontSize(14)
+                .fontColor(this.flowSource === s ? '#FFFFFF' : Theme.TEXT)
+                .backgroundColor(this.flowSource === s ? Theme.PRIMARY : Theme.CARD)
+                .borderRadius(14)
+                .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+                .onClick(() => {
+                  this.changeSource(s);
+                })
+            }, (s: string) => s)
+          }
+          .height(40)
+          .justifyContent(FlexAlign.Start)
+          .width('100%')
+        }
+        .align(Alignment.Start)
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off)
+        .width('100%')
+        .padding({ left: 14, right: 14 })
+
+        if (this.flow.length > 0) {
+          List({ space: 8 }) {
+            ForEach(this.flow, (p: PointsRecord) => {
+              ListItem() {
+                this.flowRow(p)
+              }
+            }, (p: PointsRecord) => '' + p.id)
+          }
+          .layoutWeight(1)
+          .width('100%')
+          .padding({ left: 14, right: 14 })
+
+          if (this.flow.length === this.flowLimit) {
+            Text('加载更多（已显示 ' + this.flow.length + ' 条）')
+              .fontSize(12)
+              .fontColor(Theme.PRIMARY)
+              .width('100%')
+              .textAlign(TextAlign.Center)
+              .padding({ top: 4, bottom: 10 })
               .onClick(() => {
-                this.changeSource(s);
+                this.loadMore();
               })
-          }, (s: string) => s)
-          Blank()
-        }
-        .width('100%')
-        .padding({ left: 14, right: 14 })
-
-        List({ space: 8 }) {
-          ForEach(this.flow, (p: PointsRecord) => {
-            ListItem() {
-              this.flowRow(p)
-            }
-          }, (p: PointsRecord) => '' + p.id)
-        }
-        .layoutWeight(1)
-        .width('100%')
-        .padding({ left: 14, right: 14 })
-
-        if (this.flow.length === this.flowLimit) {
-          Text('加载更多（已显示 ' + this.flow.length + ' 条）')
-            .fontSize(12)
-            .fontColor(Theme.PRIMARY)
-            .width('100%')
-            .textAlign(TextAlign.Center)
-            .padding({ top: 4, bottom: 10 })
-            .onClick(() => {
-              this.loadMore();
-            })
+          }
         }
       }
 
       if (this.segment === 0 && this.tasks.length === 0 && this.loaded) {
         EmptyState({ icon: '', title: '暂无任务' })
       }
-      if (this.segment === 1 && this.flow.length === 0 && this.loaded) {
+      if (this.segment === 1 && this.flow.length === 0 && this.loaded && !this.flowLoading) {
         EmptyState({
           icon: '',
-          title: '还没有积分流水',
-          desc: '记录低碳行为、完成任务、阅读科普都可以获得积分',
-          buttonText: '去录入',
+          title: this.emptyFlowTitle(),
+          desc: this.emptyFlowDesc(),
+          buttonText: this.hasEmptyFlowAction() ? this.emptyFlowButton() : '',
           onButton: (): void => {
-            AppStorage.setOrCreate('mainTab', Constants.TAB_RECORD);
+            this.openEmptyFlowAction();
           }
         })
       }

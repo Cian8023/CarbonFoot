@@ -97,16 +97,32 @@ export struct RecordView {
     return DateUtil.formatFull(ts);
   }
 
+  /** 行为时间支持选年月日时分，分两步：先选日期（不可选未来），再选时分（当天上限为当前时刻） */
   private showTimePicker(): void {
     const base = this.customTs > 0 ? this.customTs : Date.now();
-    const d = new Date(base);
+    CalendarPickerDialog.show({
+      selected: new Date(base),
+      end: new Date(),
+      onAccept: (date: Date) => {
+        this.showTimeOfDayPicker(date);
+      }
+    });
+  }
+
+  /** 选完日期后紧接选时分；若选中的是当天，时分不得超过当前时刻 */
+  private showTimeOfDayPicker(date: Date): void {
+    const base = this.customTs > 0 ? this.customTs : Date.now();
+    const baseDate = new Date(base);
+    const seedTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(),
+      baseDate.getHours(), baseDate.getMinutes());
+    const isToday = DateUtil.startOfDay(date.getTime()) === DateUtil.startOfDay(Date.now());
     TimePickerDialog.show({
-      selected: d,
+      selected: seedTime,
       useMilitaryTime: true,
       onAccept: (value: TimePickerResult) => {
-        const ts = DateUtil.startOfDay(Date.now()) +
-          value.hour * 3600000 + value.minute * 60000;
-        if (ts > Date.now()) {
+        const ts = new Date(date.getFullYear(), date.getMonth(), date.getDate(),
+          value.hour, value.minute).getTime();
+        if (isToday && ts > Date.now()) {
           promptAction.showToast({ message: '不能选择未来的时间哦' });
           return;
         }

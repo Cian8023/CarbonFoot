@@ -507,6 +507,8 @@ struct HomeView {
           PieChart({ items: this.pie, centerSub: StatsService.kindLabel(this.trendKind) + '总量' })
             .layoutWeight(1)
           Column({ space: 10 }) {
+            // key 带上档位 + 名称 + 四舍五入后的百分比，确保切换档位（日/周/月/年）或排序变化时
+            // 不会被 ForEach 错误复用成上一次渲染的行（避免名称与占比错位残留）。
             ForEach(this.pieShown(), (item: PieItem) => {
               Row({ space: 8 }) {
                 Circle({ width: 14, height: 14 }).fill(item.color)
@@ -520,7 +522,7 @@ struct HomeView {
                   .fontColor(Theme.TEXT_SECONDARY)
               }
               .width('100%')
-            }, (item: PieItem) => item.name)
+            }, (item: PieItem) => this.trendKind + '_' + item.name + '_' + item.pct.toFixed(0))
           }
           .layoutWeight(1)
         }

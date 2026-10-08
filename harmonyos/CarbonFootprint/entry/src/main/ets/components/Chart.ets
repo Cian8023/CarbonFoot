@@ -115,11 +115,11 @@ export struct TrendBarChart {
         this.ctx.font = 'bold ' + fpFont(20) + ' sans-serif';
         this.ctx.fillText(fmtValue(v), cx, by - 10);
       }
-      // X 轴标签（28px 大字，柱多于 8 根时隔一画一防重叠）
+      // X 轴标签（柱多于 8 根时隔一画一防重叠；纯数字标签比中文字短，字号可以统一）
       if (i % (n > 8 ? 2 : 1) === 0) {
         this.ctx.fillStyle = Theme.TEXT_TERTIARY;
         this.ctx.textAlign = 'center';
-        this.ctx.font = fpFont(16);
+        this.ctx.font = fpFont(pts[i].label.length > 7 ? 14 : 16);
         this.ctx.fillText(pts[i].label, cx, h - 12);
       }
     }
