@@ -11,6 +11,7 @@ const CATEGORIES: string[] = ['全部', '政策解读', '生活技巧', '行业�
 @Entry
 @Component
 struct Knowledge {
+  @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State articles: Article[] = [];
   @State category: string = '全部';
   @State readIds: number[] = [];

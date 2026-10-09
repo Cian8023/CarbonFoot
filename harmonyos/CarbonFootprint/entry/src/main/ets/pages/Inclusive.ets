@@ -170,7 +170,7 @@ struct Inclusive {
               .padding(12)
               .borderRadius(14)
               .backgroundColor(Theme.BG_GRAY)
-            }, (b: Benefit) => b.id)
+            }, (b: Benefit) => b.id + '_' + b.stock)
           }
           .width('100%')
           .padding(14)

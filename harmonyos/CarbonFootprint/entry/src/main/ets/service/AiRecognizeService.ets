@@ -5,7 +5,7 @@ import { cameraPicker } from '@kit.CameraKit';
 import camera from '@ohos.multimedia.camera';
 import { AppInit } from '../common/AppInit';
 import { AppConfig } from '../common/AppConfig';
-import { HttpClient } from '../network/HttpClient';
+import { HttpClient, HttpResponse } from '../network/HttpClient';
 import { CalculationService } from './CalculationService';
 import { BehaviorCategory, SubType } from '../model/Models';
 
@@ -133,12 +133,24 @@ export class AiRecognizeService {
     const reqBody: ChatRequest = { model: model, messages: [message] };
 
     const headers: Record<string, string> = { 'Authorization': 'Bearer ' + apiKey };
-    const resp = await HttpClient.postJson(baseUrl, JSON.stringify(reqBody), headers, 30000);
+    // 连接级异常（域名不可达/被拒/重定向超限等）时 http.request 会抛错而非返回状态码，
+    // 此处兜住并降级离线演示，保证演示链路不中断（此前直接冒泡为"识别失败"）
+    let resp: HttpResponse;
+    try {
+      resp = await HttpClient.postJson(baseUrl, JSON.stringify(reqBody), headers, 30000);
+    } catch (e) {
+      return AiRecognizeService.demoGuess('接口异常，使用离线演示识别');
+    }
     if (resp.code !== 200) {
       return AiRecognizeService.demoGuess('接口返回 ' + resp.code + '，使用离线演示识别');
     }
-    const chat = JSON.parse(resp.body) as ChatResponse;
-    if (chat.choices.length === 0) {
+    let chat: ChatResponse;
+    try {
+      chat = JSON.parse(resp.body) as ChatResponse;
+    } catch (e) {
+      return AiRecognizeService.demoGuess('结果解析失败，使用离线演示识别');
+    }
+    if (chat.choices === undefined || chat.choices.length === 0) {
       return AiRecognizeService.demoGuess('无识别结果，使用离线演示识别');
     }
     const content0 = chat.choices[0].message.content;

@@ -25,9 +25,9 @@ export struct HistoryView {
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State records: BehaviorRecord[] = [];
   @State rawRecords: BehaviorRecord[] = [];
-  @State rangeIndex: number = 1;
-  // 首页周报卡跳转时预选的时间档（0 全部 / 1 今日 / 2 近7天 / 3 近30天 / 4 自定义） */
-  @StorageProp('historyRange') @Watch('onExternalRange') extRange: number = 1;
+  // 时间档（0 全部 / 1 今日 / 2 近7天 / 3 近30天 / 4 自定义）；与首页周报卡预选联动：
+  // @StorageLink 双向绑定后，周报卡写 historyRange=2 必然生效（同值写入与懒初始化场景均不再漏触发）
+  @StorageLink('historyRange') @Watch('onRangeChanged') rangeIndex: number = 1;
   @State typeFilter: string = '全部';
   @State keyword: string = '';
   @State customStart: number = DateUtil.startOfDay(Date.now()) - 6 * DateUtil.DAY_MS;
@@ -46,12 +46,9 @@ export struct HistoryView {
     this.refresh();
   }
 
-  /** 首页周报卡等外部入口预选时间档 */
-  onExternalRange(): void {
-    if (this.rangeIndex !== this.extRange) {
-      this.rangeIndex = this.extRange;
-      this.refresh();
-    }
+  /** 档位变化（本页点选或首页周报卡预选）后刷新数据 */
+  onRangeChanged(): void {
+    this.refresh();
   }
 
   async refresh(): Promise<void> {
@@ -409,7 +406,6 @@ export struct HistoryView {
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .onClick(() => {
                 this.rangeIndex = idx;
-                this.refresh();
               })
           }, (r: string, idx: number) => idx.toString())
           Blank()
