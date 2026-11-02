@@ -1,0 +1,15 @@
+# 统一换行处理：文本自动识别，二进制不转换
+* text=auto
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.hap binary
+*.hsp binary
+*.app binary
+*.pptx binary
+*.docx binary
+*.rar binary
+*.mp4 binary
