@@ -446,7 +446,17 @@ export class AiRecognizeService {
         conf = 0;
       }
       const item: AiCandidate = { type: c.type, subType: c.subType, conf: conf };
-      all.push(item);
+      // 模型可能重复给出同一行为，按「大类|子类」去重，避免候选列表出现两行一样的
+      let dup = false;
+      for (const exist of all) {
+        if (exist.type === item.type && exist.subType === item.subType) {
+          dup = true;
+          break;
+        }
+      }
+      if (!dup) {
+        all.push(item);
+      }
       if (all.length >= 10) {
         break;
       }

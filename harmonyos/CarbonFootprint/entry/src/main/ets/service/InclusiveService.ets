@@ -122,6 +122,7 @@ export class InclusiveService {
         InclusiveService.stockMap.set(benefit.id, left - 1);
       }
     }
+    let deducted = false;
     try {
       if (InclusiveService.remoteMode) {
         // 优先复用列表拉取时命中的地址，避免配置值不可达但候选地址可用时兑换失败
@@ -137,6 +138,7 @@ export class InclusiveService {
       }
       // 本地记账：扣积分 + 权益入库
       await PointsService.addPoints('exchange', 0, `碳普惠兑换：${benefit.name}`, -benefit.cost);
+      deducted = true;
       const ent: Entitlement = {
         name: benefit.name,
         icon: benefit.icon,
@@ -145,6 +147,14 @@ export class InclusiveService {
       };
       await InclusiveService.saveEntitlement(ent);
     } catch (e) {
+      // 积分已扣但权益没落库时把积分补回去，避免"扣了分却没拿到东西"
+      if (deducted) {
+        try {
+          await PointsService.addPoints('exchange', 0, `兑换回滚：${benefit.name}`, benefit.cost);
+        } catch (e2) {
+          // 补回失败只能记日志，不掩盖原始错误
+        }
+      }
       // 平台请求或本地记账失败时把先前扣掉的模拟库存还回去，避免"没兑成功却少了一件"
       if (localStock) {
         const cur = InclusiveService.stockMap.get(benefit.id);

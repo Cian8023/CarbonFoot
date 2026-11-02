@@ -623,7 +623,7 @@ struct AiRecognize {
                 }
                 .width('100%')
                 .padding({ top: 6, bottom: 6 })
-              }, (it: BatchItem) => it.type + '_' + it.subType + '_' + it.at)
+              }, (it: BatchItem, i: number) => i + '_' + it.type + '_' + it.at)
 
               if (this.batchFailed > 0) {
                 Text(`${this.batchFailed} 张未识别出行为，已跳过`)
@@ -741,7 +741,7 @@ struct AiRecognize {
                   this.pickedIdx = i;
                   this.applyPick(c.type, c.subType, AiRecognizeService.suggestValue(c.type, c.subType));
                 })
-              }, (c: AiCandidate) => c.type + '_' + c.subType)
+              }, (c: AiCandidate, i: number) => i + '_' + c.type + '_' + c.subType)
 
               this.originPreview()
             }
