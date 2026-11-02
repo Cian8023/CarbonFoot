@@ -98,7 +98,14 @@ entry/src/main/ets/
 - **E5 桌面万能卡片（鸿蒙特色）**：`entryformability/EntryFormAbility.ets` + `widget/pages/WidgetCard.ets` + `profile/form_config.json`，2×2 卡片显示今日减排、具象换算、本月目标进度与连续打卡，点击直达应用。数据走"主应用写快照 → 卡片读快照"的解耦方案（`common/CardSnapshot.ets`），卡片冷启动无需初始化数据库。
 - **年度报告（附加功能）**：`pages/AnnualReport.ets` 按当前年聚合行为记录，Swiper 四屏展示年度总量、记录密度（笔数 / 活跃天数 / 年度最长连续）、高光项（最强子类型、最活跃月）与意义换算，入口在「我的」页。
 
-## 六、材料合规提醒
+## 六、工程质量
+
+- **单元测试**：`entry/src/test/`（@ohos/hypium），入口 `List.test.ets` → `Unit.test.ets`。运行 `hvigorw test`（本地执行，无需设备），覆盖 DateUtil 与 `CalculationService.valueToPoints` 共 **8 个纯函数用例**，当前全部通过。依赖 DB / preferences / 网络的服务按测试文档第 4 章人工走查。
+- **版本控制**：Git 仓库已初始化（`.gitignore` 排除构建产物、`oh_modules`、`entry/.test`、`sync/data.json`），首次提交含完整源码与文档。
+- **本地服务**：`sync/`（家庭同步，8081）与 `mock/`（碳普惠模拟，8080）均为零依赖 Node 脚本，`node <dir>/server.js` 直接跑。
+- **无三方运行时依赖**：除测试框架 `@ohos/hypium`（devDependency）外，应用本体只用系统 API。
+
+## 七、材料合规提醒
 
 - 所有参赛材料（docx/视频/PPT）中不得出现团队、院校信息（匿名要求）。
 - 打包命名：`赛题二+全民绿色生活碳积分与减排指南+XX学校XX队.rar`。
