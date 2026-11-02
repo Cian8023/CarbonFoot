@@ -1,0 +1,161 @@
+import router from '@ohos.router';
+import { AppInit } from '../common/AppInit';
+import { Theme } from '../common/Theme';
+import { Article } from '../model/Models';
+import { KnowledgeService } from '../service/KnowledgeService';
+import { PointsService } from '../service/PointsService';
+
+const CATEGORIES: string[] = ['全部', '政策解读', '生活技巧', '行业动态'];
+
+@Entry
+@Component
+struct Knowledge {
+  @StorageLink('tick') @Watch('refresh') tick: number = 0;
+  @State articles: Article[] = [];
+  @State category: string = '全部';
+  @State readIds: number[] = [];
+
+  aboutToAppear(): void {
+    this.refresh();
+  }
+
+  async refresh(): Promise<void> {
+    try {
+      await AppInit.ensure();
+      this.articles = KnowledgeService.list(this.category);
+      // 一次查回全部已读 ref，替代逐篇查询
+      const refs = await PointsService.listSourceRefs('read');
+      const ids: number[] = [];
+      for (const a of KnowledgeService.list('全部')) {
+        if (refs.indexOf(a.id) >= 0) {
+          ids.push(a.id);
+        }
+      }
+      this.readIds = ids;
+    } catch (e) {
+      console.error('Knowledge refresh error: ' + JSON.stringify(e));
+    }
+  }
+
+  private isRead(id: number): boolean {
+    return this.readIds.indexOf(id) >= 0;
+  }
+
+  build() {
+    Column({ space: 12 }) {
+      Row() {
+        Text('←')
+          .fontSize(Theme.FS_HERO)
+          .onClick(() => {
+            router.back();
+          })
+        Blank()
+        Text('双碳科普专栏')
+          .fontSize(Theme.FS_HERO)
+          .fontWeight(FontWeight.Bold)
+        Blank()
+        Text('')
+          .width(22)
+      }
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 14 })
+
+      // 分类筛选
+      Row({ space: 8 }) {
+        ForEach(CATEGORIES, (c: string) => {
+          Text(c)
+            .fontSize(Theme.FS_TERTIARY)
+            .fontColor(this.category === c ? '#FFFFFF' : Theme.TEXT)
+            .backgroundColor(this.category === c ? Theme.PRIMARY : Theme.BG_GRAY)
+            .borderRadius(14)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .onClick(() => {
+              this.category = c;
+              this.refresh();
+            })
+        }, (c: string) => c)
+        Blank()
+      }
+      .width('100%')
+      .padding({ left: 14, right: 14 })
+
+      // 阅读统计
+      Row({ space: 8 }) {
+        Text(`已读 ${this.readIds.length}/${KnowledgeService.list('全部').length} 篇`)
+          .fontSize(Theme.FS_TERTIARY)
+          .fontColor(Theme.TEXT)
+        Text(`阅读积分 +${this.readIds.length * 5}`)
+          .fontSize(Theme.FS_TERTIARY)
+          .fontColor(Theme.POINTS)
+        Blank()
+        Text('连续阅读可解锁「博学环保人」徽章')
+          .fontSize(Theme.FS_CAPTION)
+          .fontColor(Theme.TEXT_TERTIARY)
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+      .borderRadius(16)
+      .backgroundColor(Theme.CARD)
+      .borderWidth(1).borderColor(Theme.CARD_BORDER)
+      .margin({ left: 14, right: 14 })
+
+      List({ space: 10 }) {
+        ForEach(this.articles, (a: Article) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Column()
+                .width(3)
+                .height(44)
+                .borderRadius(2)
+                .backgroundColor(Theme.PRIMARY_HOVER)
+              Column({ space: 5 }) {
+                Text(a.title)
+                  .fontSize(Theme.FS_TITLE)
+                  .fontWeight(FontWeight.Medium)
+                  .maxLines(2)
+                Text(a.summary)
+                  .fontSize(Theme.FS_TERTIARY)
+                  .fontColor(Theme.TEXT_TERTIARY)
+                  .maxLines(2)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                Row({ space: 8 }) {
+                  Text(a.category)
+                    .fontSize(Theme.FS_CAPTION)
+                    .fontColor(Theme.PRIMARY)
+                    .backgroundColor(Theme.PRIMARY_BG)
+                    .borderRadius(8)
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                  if (this.isRead(a.id)) {
+                    Text('已读 +5 分')
+                      .fontSize(Theme.FS_CAPTION)
+                      .fontColor(Theme.TEXT_TERTIARY)
+                  } else {
+                    Text('阅读得 5 分 >')
+                      .fontSize(Theme.FS_CAPTION)
+                      .fontColor(Theme.POINTS)
+                  }
+                }
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .padding(12)
+            .borderRadius(16)
+            .backgroundColor(Theme.CARD)
+            .borderWidth(1).borderColor(Theme.CARD_BORDER)
+            .onClick(() => {
+              router.pushUrl({ url: 'pages/KnowledgeDetail', params: { id: a.id } });
+            })
+          }
+        }, (a: Article) => '' + a.id + '_' + (this.isRead(a.id) ? 'r' : 'n'))
+      }
+      .layoutWeight(1)
+      .width('100%')
+      .padding({ left: 14, right: 14, bottom: 14 })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(Theme.BG)
+  }
+}

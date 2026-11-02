@@ -1,0 +1,100 @@
+{
+  "tasks": [
+    {
+      "code": "daily_ride_5km",
+      "title": "骑行 5 公里",
+      "description": "今日累计骑行达到 5km，绿色出行从骑行开始",
+      "points": 10,
+      "period": "daily",
+      "check": { "subTypes": ["骑行"], "target": 5, "unit": "km", "matchType": "sum" }
+    },
+    {
+      "code": "daily_walk_5km",
+      "title": "步行 5 公里",
+      "description": "今日累计步行达到 5km，走出健康好身材",
+      "points": 8,
+      "period": "daily",
+      "check": { "subTypes": ["步行"], "target": 5, "unit": "km", "matchType": "sum" }
+    },
+    {
+      "code": "daily_bus_10km",
+      "title": "绿色公交出行",
+      "description": "今日乘坐公交/地铁累计 10km",
+      "points": 8,
+      "period": "daily",
+      "check": { "subTypes": ["公交", "地铁"], "target": 10, "unit": "km", "matchType": "sum" }
+    },
+    {
+      "code": "daily_water_50l",
+      "title": "今日节水 50L",
+      "description": "今日累计节约用水 50 升，滴水成河",
+      "points": 8,
+      "period": "daily",
+      "check": { "subTypes": ["节水"], "target": 50, "unit": "L", "matchType": "sum" }
+    },
+    {
+      "code": "daily_power_5kwh",
+      "title": "今日节电 5 度",
+      "description": "今日累计节约用电 5 kWh",
+      "points": 10,
+      "period": "daily",
+      "check": { "subTypes": ["节电"], "target": 5, "unit": "kWh", "matchType": "sum" }
+    },
+    {
+      "code": "daily_cd_3",
+      "title": "光盘三餐",
+      "description": "今日完成 3 次光盘行动（早/午/晚餐）",
+      "points": 12,
+      "period": "daily",
+      "check": { "subTypes": ["早餐", "午餐", "晚餐"], "target": 3, "unit": "次", "matchType": "count" }
+    },
+    {
+      "code": "daily_ac_2",
+      "title": "关空调 2 小时",
+      "description": "今日主动关闭空调 2 次，给地球降降温",
+      "points": 6,
+      "period": "daily",
+      "check": { "subTypes": ["关空调"], "target": 2, "unit": "次", "matchType": "count" }
+    },
+    {
+      "code": "daily_recycle_1",
+      "title": "回收一件旧物",
+      "description": "今日完成 1 笔旧物回收（纸类/塑料/玻璃/衣物/电子）",
+      "points": 10,
+      "period": "daily",
+      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物", "电子"], "target": 1, "unit": "笔", "matchType": "count" }
+    },
+    {
+      "code": "weekly_ride_30km",
+      "title": "每周骑行 30km",
+      "description": "本周累计骑行 30km，做低碳通勤达人",
+      "points": 30,
+      "period": "weekly",
+      "check": { "subTypes": ["骑行"], "target": 30, "unit": "km", "matchType": "sum" }
+    },
+    {
+      "code": "weekly_walk_30km",
+      "title": "每周步行 30km",
+      "description": "本周累计步行 30km",
+      "points": 30,
+      "period": "weekly",
+      "check": { "subTypes": ["步行"], "target": 30, "unit": "km", "matchType": "sum" }
+    },
+    {
+      "code": "weekly_recycle_5kg",
+      "title": "每周回收 5kg",
+      "description": "本周累计回收旧物 5 公斤",
+      "points": 40,
+      "period": "weekly",
+      "check": { "subTypes": ["纸类", "塑料", "玻璃", "衣物"], "target": 5, "unit": "kg", "matchType": "sum" }
+    },
+    {
+      "code": "weekly_cd_15",
+      "title": "周光盘 15 餐",
+      "description": "本周完成 15 次光盘行动",
+      "points": 50,
+      "period": "weekly",
+      "check": { "subTypes": ["早餐", "午餐", "晚餐"], "target": 15, "unit": "次", "matchType": "count" }
+    }
+  ]
+}

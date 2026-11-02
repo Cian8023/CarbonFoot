@@ -1,0 +1,10 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "carbonfootprint",
+  "version": "1.0.0",
+  "description": "碳足迹 · 全民绿色生活碳积分与减排指南",
+  "main": "",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {}
+}
