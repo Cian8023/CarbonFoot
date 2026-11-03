@@ -294,6 +294,12 @@ struct AiRecognize {
     }
   }
 
+  /** 「换一张」：清掉上次结果并立刻重新打开相册，而不是退回初始页让用户再点一次 */
+  private retryPick(): void {
+    this.resetResult();
+    this.pickAndRecognize();
+  }
+
   private updateEstimate(): void {
     if (this.guess === null) {
       this.estimateG = 0;
@@ -526,7 +532,7 @@ struct AiRecognize {
                     .backgroundColor(Theme.PRIMARY_BG)
                     .fontColor(Theme.PRIMARY)
                     .onClick(() => {
-                      this.resetResult();
+                      this.retryPick();
                     })
                 } else {
                   Button('重试')
@@ -862,7 +868,7 @@ struct AiRecognize {
                   .backgroundColor(Theme.PRIMARY_BG)
                   .fontColor(Theme.PRIMARY)
                   .onClick(() => {
-                    this.resetResult();
+                    this.retryPick();
                   })
                 Button('去手动录入')
                   .layoutWeight(1)
