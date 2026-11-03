@@ -527,28 +527,21 @@ export struct TasksView {
         .width('100%')
         .padding({ left: 14, right: 14, bottom: 14 })
       } else {
-        // 来源筛选
-        Scroll() {
-          Row({ space: 8 }) {
-            ForEach(SOURCES, (s: string) => {
-              Text(this.sourceChipLabel(s))
-                .fontSize(Theme.FS_CONTENT)
-                .fontColor(this.flowSource === s ? '#FFFFFF' : Theme.TEXT)
-                .backgroundColor(this.flowSource === s ? Theme.PRIMARY : Theme.CARD)
-                .borderRadius(14)
-                .padding({ left: 14, right: 14, top: 7, bottom: 7 })
-                .onClick(() => {
-                  this.changeSource(s);
-                })
-            }, (s: string) => s)
-          }
-          .height(40)
-          .justifyContent(FlexAlign.Start)
-          .width('100%')
+        // 来源筛选：一行放不下 5 个 chip，改为自动换行，避免最后一个被右边缘截断
+        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+          ForEach(SOURCES, (s: string) => {
+            Text(this.sourceChipLabel(s))
+              .fontSize(Theme.FS_CONTENT)
+              .fontColor(this.flowSource === s ? '#FFFFFF' : Theme.TEXT)
+              .backgroundColor(this.flowSource === s ? Theme.PRIMARY : Theme.CARD)
+              .borderRadius(14)
+              .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+              .margin({ right: 8, bottom: 6 })
+              .onClick(() => {
+                this.changeSource(s);
+              })
+          }, (s: string) => s)
         }
-        .align(Alignment.Start)
-        .scrollable(ScrollDirection.Horizontal)
-        .scrollBar(BarState.Off)
         .width('100%')
         .padding({ left: 14, right: 14 })
 
