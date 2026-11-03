@@ -65,6 +65,15 @@ export struct RecordView {
     return sub.note;
   }
 
+  /** 录入页脚注：当前系数与"估算值"提示，完整出处见记录详情 */
+  private factorHint(): string {
+    const sub = this.currentSub();
+    if (sub === null) {
+      return '';
+    }
+    return `按 ${sub.factor} g/${sub.unit} 系数估算，结果为估算值`;
+  }
+
   private parseValue(): number {
     const v = parseFloat(this.valueText);
     return isFinite(v) ? v : 0;
@@ -279,6 +288,10 @@ export struct RecordView {
           }
           .width('100%')
           .alignItems(VerticalAlign.Bottom)
+          Text(this.factorHint())
+            .fontSize(Theme.FS_CAPTION)
+            .fontColor(Theme.TEXT_TERTIARY)
+            .width('100%')
         }
         .width('100%')
         .padding(16)

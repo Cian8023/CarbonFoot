@@ -5,7 +5,14 @@ export interface SubType {
   factor: number;
   /** 单次录入上限 */
   max: number;
+  /** 一句话说明：这个计量单位具体指什么 */
   note?: string;
+  /** 适用条件与计算边界（详情页展示） */
+  basis?: string;
+  /** 系数出处说明 */
+  source?: string;
+  /** 系数整理年份 */
+  year?: number;
 }
 
 export interface BehaviorCategory {

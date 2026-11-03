@@ -403,7 +403,7 @@ struct AiRecognize {
             router.back();
           })
         Blank()
-        Text('AI 拍照识别低碳行为')
+        Text('AI 辅助识别低碳行为')
           .fontSize(Theme.FS_HEAD)
           .fontWeight(FontWeight.Bold)
         Blank()
@@ -436,7 +436,7 @@ struct AiRecognize {
             Text('拍下你的低碳行为')
               .fontSize(Theme.FS_TITLE)
               .fontWeight(FontWeight.Medium)
-            Text('AI 自动识别行为类型并估算数值，一键录入减排数据')
+            Text('AI 识别行为类型并估算数值，结果由你确认后才写入记录')
               .fontSize(Theme.FS_TERTIARY)
               .fontColor(Theme.TEXT_TERTIARY)
               .textAlign(TextAlign.Center)

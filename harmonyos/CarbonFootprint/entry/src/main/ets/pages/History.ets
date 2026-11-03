@@ -39,6 +39,8 @@ export struct HistoryView {
   @State editValue: string = '';
   @State editTs: number = 0;
   @State recPointsText: string = '';
+  @State recBasis: string = '';
+  @State recSource: string = '';
   @State totalG: number = 0;
   @State groups: RecordGroup[] = [];
 
@@ -138,6 +140,15 @@ export struct HistoryView {
     this.editValue = '' + r.value;
     this.editTs = 0;
     this.recPointsText = '查询中…';
+    // 系数出处与适用条件：让用户看得懂"这个数是怎么来的"
+    const sub = CalculationService.findSub(r.type, r.subType);
+    this.recBasis = sub !== null && sub.basis !== undefined ? sub.basis : '';
+    if (sub !== null && sub.source !== undefined) {
+      const yr = sub.year !== undefined ? ' · ' + sub.year : '';
+      this.recSource = sub.source + yr;
+    } else {
+      this.recSource = '';
+    }
     this.showSheet = true;
     this.loadPoints(r.id);
   }
@@ -197,12 +208,41 @@ export struct HistoryView {
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
-          Text(`${((this.selRecord as BehaviorRecord).reductionG / 1000).toFixed(2)} kg`)
+          Text(`${((this.selRecord as BehaviorRecord).reductionG / 1000).toFixed(2)} kg CO₂e`)
             .fontSize(Theme.FS_HEAD)
             .fontWeight(FontWeight.Bold)
             .fontColor(Theme.REDUCE)
         }
         .width('100%')
+
+        // 算法透明：数值 × 系数 = 减排量，并给出单位含义、系数出处与估算声明
+        Column({ space: 4 }) {
+          Text(`计算：${(this.selRecord as BehaviorRecord).value}${(this.selRecord as BehaviorRecord).unit} × ${(this.selRecord as BehaviorRecord).factor}g/${(this.selRecord as BehaviorRecord).unit} = ${((this.selRecord as BehaviorRecord).reductionG / 1000).toFixed(2)} kg CO₂e`)
+            .fontSize(Theme.FS_SECONDARY)
+            .fontColor(Theme.TEXT_SECONDARY)
+            .width('100%')
+          if (this.recBasis !== '') {
+            Text(`口径：${this.recBasis}`)
+              .fontSize(Theme.FS_CAPTION)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .width('100%')
+          }
+          if (this.recSource !== '') {
+            Text(`系数出处：${this.recSource}`)
+              .fontSize(Theme.FS_CAPTION)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .width('100%')
+          }
+          Text('※ 减排量为估算值，用于生活记录与激励，不用于碳交易、碳核查或认证')
+            .fontSize(Theme.FS_CAPTION)
+            .fontColor(Theme.TEXT_TERTIARY)
+            .width('100%')
+        }
+        .width('100%')
+        .padding(10)
+        .backgroundColor(Theme.BG_GRAY)
+        .borderRadius(10)
+        .alignItems(HorizontalAlign.Start)
 
         Text(this.recPointsText)
           .fontSize(Theme.FS_TERTIARY)
@@ -434,7 +474,7 @@ export struct HistoryView {
               })
           }, (r: string, idx: number) => idx.toString())
           Blank()
-          Text(`合计 ${DateUtil.gramsToKg(this.totalG)} kg`)
+          Text(`合计 ${DateUtil.gramsToKg(this.totalG)} kg CO₂e`)
             .fontSize(Theme.FS_TERTIARY)
             .fontColor(Theme.REDUCE)
         }

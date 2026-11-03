@@ -3,7 +3,15 @@ import util from '@ohos.util';
 import { BehaviorCategory, SubType } from '../model/Models';
 import { Constants } from '../common/Constants';
 
+interface FactorsMeta {
+  version?: string;
+  source?: string;
+  disclaimer?: string;
+  unit?: string;
+}
+
 interface FactorsFile {
+  meta?: FactorsMeta;
   categories: BehaviorCategory[];
 }
 
@@ -12,12 +20,19 @@ interface FactorsFile {
  */
 export class CalculationService {
   private static categories: BehaviorCategory[] = [];
+  private static meta: FactorsMeta = {};
 
   static async init(context: common.UIAbilityContext): Promise<void> {
     const data: Uint8Array = context.resourceManager.getRawFileContentSync('factors.json');
     const text: string = util.TextDecoder.create('utf-8').decodeToString(data);
     const file = JSON.parse(text) as FactorsFile;
     CalculationService.categories = file.categories;
+    CalculationService.meta = file.meta !== undefined ? file.meta : {};
+  }
+
+  /** 因子库整体说明（来源与免责声明），用于设置页与详情页脚注 */
+  static getMeta(): FactorsMeta {
+    return CalculationService.meta;
   }
 
   static getCategories(): BehaviorCategory[] {

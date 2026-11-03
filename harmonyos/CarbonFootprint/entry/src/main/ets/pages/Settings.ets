@@ -302,7 +302,7 @@ export struct MineView {
           Text(`碳足迹 v${Constants.VERSION} · Apache-2.0 · 零三方依赖`)
             .fontSize(Theme.FS_SECONDARY)
             .fontColor(Theme.TEXT_TERTIARY)
-          Text('减排因子参考生态环境部公开核算方法，仅作生活估算演示')
+          Text('减排因子为公开核算资料整理的常用取值（2024），仅作生活估算，不用于碳交易、碳核查或认证')
             .fontSize(Theme.FS_CAPTION)
             .fontColor(Theme.TEXT_TERTIARY)
         }

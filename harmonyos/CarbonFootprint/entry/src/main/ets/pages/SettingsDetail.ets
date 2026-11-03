@@ -133,8 +133,10 @@ struct SettingsDetail {
 
   private async doBackup(): Promise<void> {
     try {
-      await ExportService.backupJson();
-      promptAction.showToast({ message: '备份已保存到你选择的位置', duration: 3000 });
+      const uri = await ExportService.backupJson();
+      // 告诉用户文件叫什么、去哪里找，否则"保存成功"之后找不到文件
+      const name = uri.substring(uri.lastIndexOf('/') + 1);
+      promptAction.showToast({ message: `已保存 ${name}，可在「文件管理」中查看`, duration: 4000 });
     } catch (e) {
       const msg = (e as Error).message;
       promptAction.showToast({ message: msg === '未选择保存位置' ? '已取消保存' : '备份失败，请重试' });
@@ -143,8 +145,9 @@ struct SettingsDetail {
 
   private async doExportCsv(): Promise<void> {
     try {
-      await ExportService.exportCsv();
-      promptAction.showToast({ message: '报表已保存到你选择的位置', duration: 3000 });
+      const uri = await ExportService.exportCsv();
+      const name = uri.substring(uri.lastIndexOf('/') + 1);
+      promptAction.showToast({ message: `已保存 ${name}，可用 Excel/WPS 打开`, duration: 4000 });
     } catch (e) {
       const msg = (e as Error).message;
       promptAction.showToast({ message: msg === '未选择保存位置' ? '已取消保存' : '导出失败，请重试' });
@@ -736,7 +739,7 @@ struct SettingsDetail {
               Text('HarmonyOS · 低碳数据仅存本机；仅 AI 识别时图片发送至你配置的接口')
                 .fontSize(Theme.FS_SECONDARY)
                 .fontColor(Theme.TEXT_TERTIARY)
-              Text('减排因子参考生态环境部公开核算方法，仅作生活估算演示')
+              Text('减排因子为公开核算资料整理的常用取值（2024），仅作生活估算，不用于碳交易、碳核查或认证')
                 .fontSize(Theme.FS_SECONDARY)
                 .fontColor(Theme.TEXT_TERTIARY)
             }

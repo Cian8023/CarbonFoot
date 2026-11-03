@@ -75,11 +75,16 @@ export struct TrendBarChart {
     const padB = 50;
     const plotW = w - padL - padR;
     const plotH = h - padT - padB;
-    let maxV = 1;
+    let maxV = 0;
     for (const p of pts) {
       if (p.value > maxV) {
         maxV = p.value;
       }
+    }
+    // 全为 0 时仍画坐标轴，但额外给一句引导，避免用户面对空图表不知所措
+    const empty = maxV <= 0;
+    if (maxV < 1) {
+      maxV = 1;
     }
     const n = pts.length;
     const slot = plotW / n;
@@ -201,6 +206,15 @@ export struct TrendBarChart {
       this.ctx.fillText(lbl, lx, h - 12);
       lastRight = lx + half;
     }
+
+    if (empty) {
+      this.ctx.fillStyle = Theme.TEXT_TERTIARY;
+      this.ctx.textAlign = 'center';
+      this.ctx.font = fpFont(15) + ' sans-serif';
+      this.ctx.fillText('这段时间还没有记录', w / 2, padT + plotH / 2);
+      this.ctx.font = fpFont(13) + ' sans-serif';
+      this.ctx.fillText('去「录入」记一笔，趋势就出来了', w / 2, padT + plotH / 2 + 22);
+    }
   }
 
   build() {
@@ -277,11 +291,15 @@ export struct TrendLineChart {
     const plotW = w - padL - padR;
     const plotH = h - padT - padB;
     const baseline = padT + plotH;
-    let maxV = 1;
+    let maxV = 0;
     for (const p of pts) {
       if (p.value > maxV) {
         maxV = p.value;
       }
+    }
+    const empty = maxV <= 0;
+    if (maxV < 1) {
+      maxV = 1;
     }
     const n = pts.length;
     const stepX = n > 1 ? plotW / (n - 1) : 0;
@@ -426,6 +444,15 @@ export struct TrendLineChart {
       this.ctx.textAlign = 'center';
       this.ctx.fillText(lbl, lx, h - 12);
       lastRight = lx + half;
+    }
+
+    if (empty) {
+      this.ctx.fillStyle = Theme.TEXT_TERTIARY;
+      this.ctx.textAlign = 'center';
+      this.ctx.font = fpFont(15) + ' sans-serif';
+      this.ctx.fillText('这段时间还没有记录', w / 2, padT + plotH / 2);
+      this.ctx.font = fpFont(13) + ' sans-serif';
+      this.ctx.fillText('去「录入」记一笔，趋势就出来了', w / 2, padT + plotH / 2 + 22);
     }
   }
 

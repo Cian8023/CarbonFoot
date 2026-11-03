@@ -508,6 +508,14 @@ export struct TasksView {
         .border({ width: 1, color: Theme.DIVIDER })
         .margin({ left: 14, right: 14 })
 
+        // 说清规则：什么时候重置、能不能重复领
+        Text('每日任务每天 0 点重置，每周任务每周一 0 点重置；同一任务每期只发一次积分，重复记录不重复加分')
+          .fontSize(Theme.FS_CAPTION)
+          .fontColor(Theme.TEXT_TERTIARY)
+          .width('100%')
+          .padding({ left: 16, right: 16 })
+          .margin({ top: 6, bottom: 2 })
+
         List({ space: 10 }) {
           ForEach(this.tasks, (p: TaskProgress) => {
             ListItem() {

@@ -473,7 +473,7 @@ struct HomeView {
       .width('100%')
       // 创新拓展功能入口
       Row({ space: 5 }) {
-        this.quickEntry($r('sys.symbol.camera'), '拍照识别', 'AI 自动录入', '#5B7C99', (): void => {
+        this.quickEntry($r('sys.symbol.camera'), '拍照识别', 'AI 辅助录入', '#5B7C99', (): void => {
           router.pushUrl({ url: 'pages/AiRecognize' });
         })
         this.quickEntry($r('sys.symbol.gift'), '碳普惠', '积分兑权益', '#C2410C', (): void => {
