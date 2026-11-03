@@ -33,11 +33,32 @@ export struct TrendBarChart {
   @Prop @Watch('redraw') points: ChartPoint[] = [];
   /** 是否已完成首次绘制（可见区触发，避免首帧多 Canvas 抢占） */
   private drawn: boolean = false;
+  /** 点击选中的数据点下标，-1 表示未选中（默认只标注峰值与当期） */
+  private selIdx: number = -1;
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
   redraw(): void {
+    // 数据换了（切周期/刷新），旧的选中下标已无意义
+    this.selIdx = -1;
     this.draw();
+  }
+
+  /** 把点击的 x 坐标换算成柱子下标；点在绘图区外返回 -1 */
+  private pickIndex(x: number): number {
+    const n = this.points.length;
+    const w = this.ctx.width;
+    if (n === 0 || w <= 0) {
+      return -1;
+    }
+    const padL = 12;
+    const padR = 12;
+    const plotW = w - padL - padR;
+    if (x < padL - 6 || x > w - padR + 6) {
+      return -1;
+    }
+    const i = Math.floor((x - padL) / (plotW / n));
+    return Math.max(0, Math.min(n - 1, i));
   }
 
   private draw(): void {
@@ -62,13 +83,14 @@ export struct TrendBarChart {
     }
     const n = pts.length;
     const slot = plotW / n;
-    // 数值只标注峰值与当期，防止拥挤
+    // 数值只标注峰值与当期，防止拥挤；点击某根柱子后改为标注被点中的那根
     let maxIdx = 0;
     for (let i = 1; i < n; i++) {
       if (pts[i].value > pts[maxIdx].value) {
         maxIdx = i;
       }
     }
+    const sel = this.selIdx >= 0 && this.selIdx < n ? this.selIdx : -1;
     const barW = Math.min(60, slot * 0.72);
     const baseline = padT + plotH;
 
@@ -83,6 +105,8 @@ export struct TrendBarChart {
       this.ctx.stroke();
     }
 
+    const barCx: number[] = [];
+    const barTop: number[] = [];
     for (let i = 0; i < n; i++) {
       const cx = padL + slot * i + slot / 2;
       const v = pts[i].value;
@@ -101,7 +125,7 @@ export struct TrendBarChart {
       this.ctx.closePath();
       // 最后一根（当期）高亮渐变，其余浅绿渐变，越往下越淡
       const barGrad = this.ctx.createLinearGradient(0, by, 0, baseline);
-      if (i === n - 1) {
+      if (i === n - 1 || i === sel) {
         barGrad.addColorStop(0, Theme.PRIMARY);
         barGrad.addColorStop(1, 'rgba(47,107,79,0.40)');
       } else {
@@ -110,20 +134,72 @@ export struct TrendBarChart {
       }
       this.ctx.fillStyle = barGrad;
       this.ctx.fill();
-      // 顶部数值
-      if (v > 0 && (i === n - 1 || i === maxIdx)) {
-        this.ctx.fillStyle = i === n - 1 ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
-        this.ctx.textAlign = 'center';
-        this.ctx.font = 'bold ' + fpFont(20) + ' sans-serif';
-        this.ctx.fillText(fmtValue(v), cx, by - 10);
+      // 被点中的柱子加描边，和"当期"区分开
+      if (i === sel && i !== n - 1) {
+        this.ctx.strokeStyle = Theme.PRIMARY;
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
       }
-      // X 轴标签（柱多于 8 根时隔一画一防重叠；纯数字标签比中文字短，字号可以统一）
-      if (i % (n > 8 ? 2 : 1) === 0) {
-        this.ctx.fillStyle = Theme.TEXT_TERTIARY;
-        this.ctx.textAlign = 'center';
-        this.ctx.font = fpFont(pts[i].label.length > 7 ? 14 : 16);
-        this.ctx.fillText(pts[i].label, cx, h - 12);
+      barCx.push(cx);
+      barTop.push(by);
+    }
+
+    // 顶部数值：选中的那根优先显示，未选中时保持"峰值 + 当期"的老样子
+    for (let i = 0; i < n; i++) {
+      const v = pts[i].value;
+      const isSel = i === sel;
+      const isLast = i === n - 1;
+      // 值为 0 的柱子平时不标，但被点中时要明确告诉用户"这天是 0"
+      if (v <= 0 && !isSel) {
+        continue;
       }
+      if (!isSel && !isLast && i !== maxIdx) {
+        continue;
+      }
+      this.ctx.fillStyle = isSel || isLast ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
+      this.ctx.textAlign = 'center';
+      this.ctx.font = 'bold ' + fpFont(isSel ? 22 : 20) + ' sans-serif';
+      const txt = fmtValue(v);
+      // 贴边的柱子（首尾）数值会被画布裁掉，按文字实际宽度夹紧回来
+      const half = this.ctx.measureText(txt).width / 2;
+      let tx = barCx[i];
+      if (tx - half < 1) {
+        tx = half + 1;
+      }
+      if (tx + half > w - 1) {
+        tx = w - 1 - half;
+      }
+      this.ctx.fillText(txt, tx, barTop[i] - 10);
+    }
+
+    // X 轴标签（柱多于 8 根时隔一画一防重叠；选中的那个一定画出来）
+    // 字号按标签长度自适应：月视图 "2026.10"、周视图 "10.26-11.1" 这类长标签
+    // 用 16 号会超过槽宽糊成一团，这里降到 13 号，并保留重叠兜底跳过
+    let lastRight = -9999;
+    for (let i = 0; i < n; i++) {
+      const isSel = i === sel;
+      const isLast = i === n - 1;
+      if (i % (n > 8 ? 2 : 1) !== 0 && !isSel && !isLast) {
+        continue;
+      }
+      const lbl = pts[i].label;
+      this.ctx.font = (isSel ? 'bold ' : '') + fpFont(lbl.length >= 6 ? 13 : 16);
+      const half = this.ctx.measureText(lbl).width / 2;
+      let lx = barCx[i];
+      if (lx - half < 1) {
+        lx = half + 1;
+      }
+      if (lx + half > w - 1) {
+        lx = w - 1 - half;
+      }
+      // 与上一个标签压字则跳过；当期与选中的标签始终保留
+      if (!isSel && !isLast && lx - half < lastRight + 2) {
+        continue;
+      }
+      this.ctx.fillStyle = isSel ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText(lbl, lx, h - 12);
+      lastRight = lx + half;
     }
   }
 
@@ -139,6 +215,15 @@ export struct TrendBarChart {
           this.draw();
         }
       })
+      .onClick((e: ClickEvent) => {
+        const i = this.pickIndex(e.x);
+        if (i < 0) {
+          return;
+        }
+        // 再点同一根取消选中，回到"峰值 + 当期"的默认标注
+        this.selIdx = this.selIdx === i ? -1 : i;
+        this.draw();
+      })
   }
 }
 
@@ -147,11 +232,34 @@ export struct TrendBarChart {
 export struct TrendLineChart {
   @Prop @Watch('redraw') points: ChartPoint[] = [];
   private drawn: boolean = false;
+  /** 点击选中的数据点下标，-1 表示未选中（默认只标注峰值与当期） */
+  private selIdx: number = -1;
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
   redraw(): void {
+    this.selIdx = -1;
     this.draw();
+  }
+
+  /** 取离点击位置最近的数据点；点得太靠边返回 -1 */
+  private pickIndex(x: number): number {
+    const n = this.points.length;
+    const w = this.ctx.width;
+    if (n === 0 || w <= 0) {
+      return -1;
+    }
+    const padL = 22;
+    const padR = 22;
+    const plotW = w - padL - padR;
+    if (x < padL - 14 || x > w - padR + 14) {
+      return -1;
+    }
+    if (n === 1) {
+      return 0;
+    }
+    const i = Math.round((x - padL) / (plotW / (n - 1)));
+    return Math.max(0, Math.min(n - 1, i));
   }
 
   private draw(): void {
@@ -231,23 +339,49 @@ export struct TrendLineChart {
         maxIdx = i;
       }
     }
+    const sel = this.selIdx >= 0 && this.selIdx < n ? this.selIdx : -1;
 
-    // 普通点描白边小圆，峰值与当期放大并标注数值
+    // 选中点的竖向指示线：从数据点垂到基线，一眼看出是哪一期
+    if (sel >= 0) {
+      this.ctx.save();
+      this.ctx.setLineDash([4, 4]);
+      this.ctx.strokeStyle = Theme.PRIMARY_HOVER;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.beginPath();
+      this.ctx.moveTo(xs[sel], ys[sel]);
+      this.ctx.lineTo(xs[sel], baseline);
+      this.ctx.stroke();
+      this.ctx.setLineDash([]);
+      this.ctx.restore();
+    }
+
+    // 普通点描白边小圆，峰值、当期与选中点放大并标注数值
     for (let i = 0; i < n; i++) {
-      const isKey = i === n - 1 || i === maxIdx;
+      const isSel = i === sel;
+      const isKey = isSel || i === n - 1 || i === maxIdx;
       if (isKey) {
         this.ctx.beginPath();
-        this.ctx.arc(xs[i], ys[i], 5.5, 0, Math.PI * 2);
-        this.ctx.fillStyle = i === n - 1 ? Theme.PRIMARY : '#FFFFFF';
+        this.ctx.arc(xs[i], ys[i], isSel ? 7 : 5.5, 0, Math.PI * 2);
+        this.ctx.fillStyle = isSel || i === n - 1 ? Theme.PRIMARY : '#FFFFFF';
         this.ctx.fill();
         this.ctx.strokeStyle = Theme.PRIMARY;
-        this.ctx.lineWidth = 2.5;
+        this.ctx.lineWidth = isSel ? 3 : 2.5;
         this.ctx.stroke();
-        if (pts[i].value > 0) {
-          this.ctx.fillStyle = i === n - 1 ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
+        if (pts[i].value > 0 || isSel) {
+          this.ctx.fillStyle = isSel || i === n - 1 ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
           this.ctx.textAlign = 'center';
-          this.ctx.font = 'bold ' + fpFont(20) + ' sans-serif';
-          this.ctx.fillText(fmtValue(pts[i].value), xs[i], ys[i] - 16);
+          this.ctx.font = 'bold ' + fpFont(isSel ? 22 : 20) + ' sans-serif';
+          const txt = fmtValue(pts[i].value);
+          // 首尾点的数值会越出画布，夹紧回来
+          const half = this.ctx.measureText(txt).width / 2;
+          let tx = xs[i];
+          if (tx - half < 1) {
+            tx = half + 1;
+          }
+          if (tx + half > w - 1) {
+            tx = w - 1 - half;
+          }
+          this.ctx.fillText(txt, tx, ys[i] - (isSel ? 18 : 16));
         }
       } else {
         this.ctx.beginPath();
@@ -264,7 +398,7 @@ export struct TrendLineChart {
     // 现改为先量实际文字宽度，只有真的越出画布时才做最小必要平移，并对相邻标签做重叠保护。
     const labelIdx: number[] = [];
     for (let i = 0; i < n; i++) {
-      if (i % (n > 8 ? 2 : 1) !== 0 && i !== n - 1) {
+      if (i % (n > 8 ? 2 : 1) !== 0 && i !== n - 1 && i !== sel) {
         continue;
       }
       labelIdx.push(i);
@@ -272,8 +406,9 @@ export struct TrendLineChart {
     let lastRight = -9999;
     for (let k = 0; k < labelIdx.length; k++) {
       const i = labelIdx[k];
+      const isSel = i === sel;
       const lbl = pts[i].label;
-      this.ctx.font = fpFont(lbl.length > 7 ? 14 : 16);
+      this.ctx.font = (isSel ? 'bold ' : '') + fpFont(lbl.length >= 6 ? 13 : 16);
       const half = this.ctx.measureText(lbl).width / 2;
       let lx = xs[i];
       if (lx - half < 1) {
@@ -282,12 +417,12 @@ export struct TrendLineChart {
       if (lx + half > w - 1) {
         lx = w - 1 - half;
       }
-      // 与上一个标签压字则跳过；最后一个标签始终保留
+      // 与上一个标签压字则跳过；最后一个标签与选中标签始终保留
       const isLast = k === labelIdx.length - 1;
-      if (!isLast && lx - half < lastRight + 2) {
+      if (!isLast && !isSel && lx - half < lastRight + 2) {
         continue;
       }
-      this.ctx.fillStyle = Theme.TEXT_TERTIARY;
+      this.ctx.fillStyle = isSel ? Theme.PRIMARY : Theme.TEXT_TERTIARY;
       this.ctx.textAlign = 'center';
       this.ctx.fillText(lbl, lx, h - 12);
       lastRight = lx + half;
@@ -303,6 +438,15 @@ export struct TrendLineChart {
           this.drawn = true;
           this.draw();
         }
+      })
+      .onClick((e: ClickEvent) => {
+        const i = this.pickIndex(e.x);
+        if (i < 0) {
+          return;
+        }
+        // 再点同一个点取消选中，回到"峰值 + 当期"的默认标注
+        this.selIdx = this.selIdx === i ? -1 : i;
+        this.draw();
       })
   }
 }
