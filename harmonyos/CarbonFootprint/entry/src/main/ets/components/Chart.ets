@@ -1,5 +1,6 @@
 import display from '@ohos.display';
 import { Theme } from '../common/Theme';
+import { PercentUtil } from '../utils/PercentUtil';
 
 /** Canvas 的 font 单位是物理 px，需乘屏幕密度才能达到 Text fontSize 的 fp 视觉大小（供证书/海报等复用） */
 export function fpFont(n: number): string {
@@ -15,7 +16,10 @@ export interface PieItem {
   name: string;
   value: number;
   color: string;
+  /** 精确占比（0~100），用于画扇形与进度条，不要直接显示 */
   pct: number;
+  /** 取整后的占比标签（如 `51%` / `<1%`），由 PercentUtil 统一计算，保证图例合计为 100% */
+  pctText?: string;
 }
 
 function fmtValue(v: number): string {
@@ -662,12 +666,23 @@ export struct BarChart {
     return Math.max(0, Math.min(100, total > 0 ? it.value / total * 100 : 0));
   }
 
-  private pctLabel(it: PieItem, total: number): string {
-    const pct = this.pctOf(it, total);
-    if (it.value > 0 && pct < 1) {
-      return '<1%';
+  /**
+   * 各项百分比标签。
+   * 逐项 toFixed(0) 会因各自四舍五入导致合计出现 99% 或 101%（如 51+39+9），
+   * 改用 PercentUtil 的最大余数法，保证合计恰为 100%；不足 1% 的项仍显示「<1%」。
+   */
+  private pctLabels(list: PieItem[]): string[] {
+    const values: number[] = [];
+    for (const it of list) {
+      values.push(it.value);
     }
-    return pct.toFixed(0) + '%';
+    return PercentUtil.text(values);
+  }
+
+  /** 取排序后第 idx 项的百分比标签（build 内不能声明局部变量，故按需计算；列表 ≤6 项开销可忽略） */
+  private pctLabelAt(list: PieItem[], idx: number): string {
+    const labels = this.pctLabels(list);
+    return idx >= 0 && idx < labels.length ? labels[idx] : '';
   }
 
   build() {
@@ -715,7 +730,7 @@ export struct BarChart {
             }
             .layoutWeight(1)
 
-            Text(this.pctLabel(it, this.totalValue()))
+            Text(this.pctLabelAt(this.sortedItems(), idx))
               .fontSize(Theme.FS_TERTIARY)
               .fontColor(Theme.TEXT_TERTIARY)
               .width(44)

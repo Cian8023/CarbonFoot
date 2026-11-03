@@ -590,12 +590,12 @@ struct HomeView {
                   .maxLines(1)
                   .fontColor(Theme.TEXT)
                 Blank()
-                Text(`${item.pct.toFixed(0)}%`)
+                Text(item.pctText !== undefined ? item.pctText : item.pct.toFixed(0) + '%')
                   .fontSize(Theme.FS_TITLE)
                   .fontColor(Theme.TEXT_SECONDARY)
               }
               .width('100%')
-            }, (item: PieItem) => this.trendKind + '_' + item.name + '_' + item.pct.toFixed(0))
+            }, (item: PieItem) => this.trendKind + '_' + item.name)
           }
           .layoutWeight(1)
         }
@@ -644,10 +644,17 @@ struct HomeView {
           Text('本周减排')
             .fontSize(Theme.FS_SECONDARY)
             .fontColor(Theme.TEXT_TERTIARY)
-          Text(DateUtil.gramsToKg(this.weekly.weekG))
-            .fontSize(Theme.FS_HERO)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(Theme.PRIMARY)
+          Row({ space: 4 }) {
+            Text(DateUtil.gramsToKg(this.weekly.weekG))
+              .fontSize(Theme.FS_HERO)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Theme.PRIMARY)
+            Text('kg CO₂e')
+              .fontSize(Theme.FS_SECONDARY)
+              .fontColor(Theme.TEXT_TERTIARY)
+              .margin({ bottom: 6 })
+          }
+          .alignItems(VerticalAlign.Bottom)
         }
         .alignItems(HorizontalAlign.Start)
 
@@ -688,7 +695,7 @@ struct HomeView {
       .width('100%')
 
       if (this.weekly.topSub !== '') {
-        Text(`本周最强项：${this.weekly.topSub}（${DateUtil.gramsToKg(this.weekly.topSubG)}）`)
+        Text(`本周最强项：${this.weekly.topSub}（${DateUtil.gramsToKg(this.weekly.topSubG)} kg CO₂e）`)
           .fontSize(Theme.FS_TERTIARY)
           .fontColor(Theme.TEXT_SECONDARY)
           .width('100%')

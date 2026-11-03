@@ -1,6 +1,7 @@
 import { BehaviorRecord } from '../model/Models';
 import { ChartPoint, PieItem } from '../components/Chart';
 import { DateUtil } from '../utils/DateUtil';
+import { PercentUtil } from '../utils/PercentUtil';
 import { Theme } from '../common/Theme';
 import { Constants } from '../common/Constants';
 
@@ -243,6 +244,15 @@ export class StatsService {
       idx++;
     });
     items.sort((a: PieItem, b: PieItem) => b.value - a.value);
+    // 排序后统一算整数标签：逐项 toFixed(0) 会让图例合计变成 99%/101%
+    const vals: number[] = [];
+    for (const it of items) {
+      vals.push(it.value);
+    }
+    const labels = PercentUtil.text(vals);
+    for (let i = 0; i < items.length; i++) {
+      items[i].pctText = labels[i];
+    }
     return items;
   }
 
