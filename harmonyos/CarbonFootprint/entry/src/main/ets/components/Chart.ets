@@ -31,6 +31,15 @@ function fmtValue(v: number): string {
   return (v / 1000).toFixed(1) + 'kg';
 }
 
+/** 把一组趋势数据压成指纹，用于判断"这次重绘的数据是否变了"（变了就清掉点击选中） */
+function chartSig(pts: ChartPoint[]): string {
+  let s = '';
+  for (const p of pts) {
+    s += p.label + ':' + p.value + ';';
+  }
+  return s;
+}
+
 /** 竖向柱状图：华为运动健康风格的周/月/年减排趋势 */
 @Component
 export struct TrendBarChart {
@@ -39,6 +48,8 @@ export struct TrendBarChart {
   private drawn: boolean = false;
   /** 点击选中的数据点下标，-1 表示未选中（默认只标注峰值与当期） */
   private selIdx: number = -1;
+  /** 上次绘制所用的数据指纹：数据一变就清掉选中，避免"新增记录后还标着旧的那一天" */
+  private lastSig: string = '';
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
@@ -72,6 +83,12 @@ export struct TrendBarChart {
     const pts = this.points;
     if (pts.length === 0 || w <= 0 || h <= 0) {
       return;
+    }
+    // 数据变了就清掉选中：新增/删除记录后不应继续标着原来那一天
+    const sig = chartSig(pts);
+    if (sig !== this.lastSig) {
+      this.lastSig = sig;
+      this.selIdx = -1;
     }
     const padL = 12;
     const padR = 12;
@@ -227,8 +244,9 @@ export struct TrendBarChart {
       .height(330)
       // 延迟到进入可视区再首次绘制：首页一次挂多个 Canvas，
       // 若全部在首帧同时出图会互相抢占导致撕裂卡顿
+      // 每次回到可见区都重绘：后台期间数据可能已变，只画首帧会停在旧画面
       .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean) => {
-        if (isVisible && !this.drawn) {
+        if (isVisible) {
           this.drawn = true;
           this.draw();
         }
@@ -252,6 +270,8 @@ export struct TrendLineChart {
   private drawn: boolean = false;
   /** 点击选中的数据点下标，-1 表示未选中（默认只标注峰值与当期） */
   private selIdx: number = -1;
+  /** 上次绘制所用的数据指纹：数据一变就清掉选中，避免"新增记录后还标着旧的那一天" */
+  private lastSig: string = '';
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
@@ -287,6 +307,12 @@ export struct TrendLineChart {
     const pts = this.points;
     if (pts.length === 0 || w <= 0 || h <= 0) {
       return;
+    }
+    // 数据变了就清掉选中：新增/删除记录后不应继续标着原来那一天
+    const sig = chartSig(pts);
+    if (sig !== this.lastSig) {
+      this.lastSig = sig;
+      this.selIdx = -1;
     }
     const padL = 22;
     const padR = 22;
@@ -464,8 +490,9 @@ export struct TrendLineChart {
     Canvas(this.ctx)
       .width('100%')
       .height(330)
+      // 每次回到可见区都重绘：后台期间数据可能已变，只画首帧会停在旧画面
       .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean) => {
-        if (isVisible && !this.drawn) {
+        if (isVisible) {
           this.drawn = true;
           this.draw();
         }
@@ -559,8 +586,9 @@ export struct PieChart {
     Canvas(this.ctx)
       .width('100%')
       .height(220)
+      // 每次回到可见区都重绘：后台期间数据可能已变，只画首帧会停在旧画面
       .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean) => {
-        if (isVisible && !this.drawn) {
+        if (isVisible) {
           this.drawn = true;
           this.draw();
         }
@@ -634,8 +662,9 @@ export struct GoalRing {
     Canvas(this.ctx)
       .width('100%')
       .height(170)
+      // 每次回到可见区都重绘：后台期间数据可能已变，只画首帧会停在旧画面
       .onVisibleAreaChange([0.0, 1.0], (isVisible: boolean) => {
-        if (isVisible && !this.drawn) {
+        if (isVisible) {
           this.drawn = true;
           this.draw();
         }
