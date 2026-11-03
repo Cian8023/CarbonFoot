@@ -22,13 +22,13 @@ export interface PieItem {
   pctText?: string;
 }
 
+/**
+ * 图表数值统一用 kg 显示，保留一位小数。
+ * 早期按量级在 g / kg / t 之间切换，同一张图里出现「0g」和「8.5kg」两种单位，
+ * 容易被误读成不同量纲，故统一为 kg（内部存储仍是克）。
+ */
 function fmtValue(v: number): string {
-  if (v >= 1000000) {
-    return (v / 1000000).toFixed(1) + 't';
-  } else if (v >= 1000) {
-    return (v / 1000).toFixed(1) + 'kg';
-  }
-  return Math.round(v) + 'g';
+  return (v / 1000).toFixed(1) + 'kg';
 }
 
 /** 竖向柱状图：华为运动健康风格的周/月/年减排趋势 */
