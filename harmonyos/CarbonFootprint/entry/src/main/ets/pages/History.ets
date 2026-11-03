@@ -473,10 +473,6 @@ export struct HistoryView {
                 this.rangeIndex = idx;
               })
           }, (r: string, idx: number) => idx.toString())
-          Blank()
-          Text(`合计 ${DateUtil.gramsToKg(this.totalG)} kg CO₂e`)
-            .fontSize(Theme.FS_TERTIARY)
-            .fontColor(Theme.REDUCE)
         }
         .width('100%')
 
@@ -523,6 +519,18 @@ export struct HistoryView {
                 this.refresh();
               })
           }, (t: string, idx: number) => idx.toString())
+        }
+        .width('100%')
+
+        // 合计单独一行：与时间筛选挤在同一行会被裁掉单位
+        Row() {
+          Text(`共 ${this.records.length} 条`)
+            .fontSize(Theme.FS_SECONDARY)
+            .fontColor(Theme.TEXT_TERTIARY)
+          Blank()
+          Text(`合计 ${DateUtil.gramsToKg(this.totalG)} kg CO₂e`)
+            .fontSize(Theme.FS_TERTIARY)
+            .fontColor(Theme.REDUCE)
         }
         .width('100%')
       }
