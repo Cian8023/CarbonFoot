@@ -45,8 +45,9 @@ export class BehaviorService {
       const id = BehaviorRepo.insertSync(record);
       record.id = id;
       if (points > 0) {
+        // 单位与图表、首页保持一致，统一用 kg（内部仍按克存储）
         await PointsService.addPointsTx('behavior', id,
-          `${subType} ${value}${unit}，减排${grams}g`, points);
+          `${subType} ${value}${unit}，减排${(grams / 1000).toFixed(2)}kg`, points);
       }
       DBHelper.commitTx();
     } catch (e) {

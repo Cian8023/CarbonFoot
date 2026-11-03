@@ -185,7 +185,7 @@ export struct RecordView {
   }
 
   build() {
-    Stack() {
+    Stack({ alignContent: Alignment.Bottom }) {
     Scroll() {
       Column({ space: 14 }) {
         Row() {
@@ -339,25 +339,29 @@ export struct RecordView {
         .borderRadius(Theme.R_LARGE)
         .backgroundColor(Theme.CARD)
         .borderWidth(1).borderColor(Theme.CARD_BORDER)
-
-        Button(this.submitting ? '保存中…' : '提交记录')
-          .width('100%')
-          .height(48)
-          .fontSize(Theme.FS_TITLE)
-          .backgroundColor(Theme.PRIMARY)
-          .borderWidth(1).borderColor(Theme.CARD_BORDER)
-          .enabled(!this.submitting)
-          .onClick(() => {
-            this.submit();
-          })
       }
       .width('100%')
-      .padding(14)
+      .padding({ left: 14, right: 14, top: 14, bottom: 76 })
     }
     .scrollBar(BarState.Off)
     .width('100%')
     .height('100%')
     .align(Alignment.Top)
+
+    // 提交按钮固定在底部：表单变长时不会被挤出屏幕，用户不用先滚动才能提交
+    Row() {
+      Button(this.submitting ? '保存中…' : '提交记录')
+        .width('100%')
+        .height(48)
+        .fontSize(Theme.FS_TITLE)
+        .backgroundColor(Theme.PRIMARY)
+        .enabled(!this.submitting)
+        .onClick(() => {
+          this.submit();
+        })
+    }
+    .width('100%')
+    .padding({ left: 14, right: 14, bottom: 10 })
 
     // 勋章解锁动画层（置顶）
     if (this.showUnlock) {
