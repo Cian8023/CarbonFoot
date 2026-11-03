@@ -28,6 +28,8 @@ interface BatchItem {
 @Component
 struct AiRecognize {
   @State recognizing: boolean = false;
+  /** 批量识别进度文案（如「正在识别 3/9」），单张识别时为空 */
+  @State batchProgress: string = '';
   @State guess: AiGuess | null = null;
   /** ticket=票据提取 / scene=场景候选 / none=没看出低碳行为 / ''=未识别 */
   @State resultKind: string = '';
@@ -119,12 +121,13 @@ struct AiRecognize {
       this.failReason = '图片处理失败：' + (e as Error).message;
     } finally {
       this.recognizing = false;
+      this.batchProgress = '';
     }
   }
 
   private async pickAndRecognize(): Promise<void> {
     try {
-      const uris = await AiRecognizeService.pickImages(5);
+      const uris = await AiRecognizeService.pickImages(9);
       if (uris.length === 1) {
         await this.recognizeUri(uris[0]);
       } else {
@@ -145,7 +148,11 @@ struct AiRecognize {
       await AppInit.ensure();
       AiRecognizeService.begin();
       promptAction.showToast({ message: `正在识别 ${uris.length} 张…` });
+      let doneCount = 0;
       for (const u of uris) {
+        doneCount++;
+        // 9 张串行识别约 40 秒，必须让用户看到进度，否则会以为卡死
+        this.batchProgress = `正在识别 ${doneCount}/${uris.length}`;
         this.lastUri = u;
         try {
           const b64 = await AiRecognizeService.imageToBase64(u);
@@ -208,6 +215,7 @@ struct AiRecognize {
       }
     } finally {
       this.recognizing = false;
+      this.batchProgress = '';
     }
   }
 
@@ -476,6 +484,14 @@ struct AiRecognize {
           .width('100%')
 
           if (this.recognizing) {
+            if (this.batchProgress !== '') {
+              Text(this.batchProgress)
+                .fontSize(Theme.FS_BODY)
+                .fontColor(Theme.TEXT_SECONDARY)
+                .width('100%')
+                .textAlign(TextAlign.Center)
+                .padding({ top: 4, bottom: 2 })
+            }
             Button('取消识别')
               .width('100%')
               .height(36)
@@ -889,7 +905,7 @@ struct AiRecognize {
             .borderWidth(1).borderColor(Theme.CARD_BORDER)
           }
 
-          Text('说明：需在「我的 > 设置 > 服务配置」填入视觉模型（默认 deepseek-flash，原生多模态；也可用 glm-4v-flash、qwen-vl-max）的接口地址、模型名与 API Key。识别分两种：① 行程单/外卖单/电费单/水费单等票据，直接读出里程或用量（数值取自原文，不是猜的）；② 普通照片给出最多 3 个候选，置信度不足时由你点选。相册可一次选多张（最多 5 张），逐张识别后汇总成一张确认卡，一次录入全部。未配置或调用失败时不会编造结果，会提示原因并提供「重试」与「去手动录入」。识别结果均可手动修改后再提交。')
+          Text('说明：需在「我的 > 设置 > 服务配置」填入视觉模型（默认 deepseek-flash，原生多模态；也可用 glm-4v-flash、qwen-vl-max）的接口地址、模型名与 API Key。识别分两种：① 行程单/外卖单/电费单/水费单等票据，直接读出里程或用量（数值取自原文，不是猜的）；② 普通照片给出最多 3 个候选，置信度不足时由你点选。相册可一次选多张（最多 9 张），逐张识别后汇总成一张确认卡，一次录入全部。未配置或调用失败时不会编造结果，会提示原因并提供「重试」与「去手动录入」。识别结果均可手动修改后再提交。')
             .fontSize(Theme.FS_SECONDARY)
             .fontColor(Theme.TEXT_TERTIARY)
         }
