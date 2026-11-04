@@ -1,0 +1,23 @@
+{
+  "CF928921": {
+    "createdAt": 1793608471686,
+    "members": {
+      "dev-mvz06b70-dd5": {
+        "deviceId": "dev-mvz06b70-dd5",
+        "name": "我的设备",
+        "totalG": 14088,
+        "balance": 184,
+        "weekG": 8460,
+        "updatedAt": 1793610400137
+      },
+      "dev-mvz03ljp-a7sl": {
+        "deviceId": "dev-mvz03ljp-a7sl",
+        "name": "yy",
+        "totalG": 0,
+        "balance": 0,
+        "weekG": 0,
+        "updatedAt": 1793609312083
+      }
+    }
+  }
+}
