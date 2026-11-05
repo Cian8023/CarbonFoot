@@ -1,1 +1,1 @@
-OpenHarmony API 12 以上开发，
+构成完整闭环。
