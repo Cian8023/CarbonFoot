@@ -40,7 +40,7 @@ function chartSig(pts: ChartPoint[]): string {
   return s;
 }
 
-/** 竖向柱状图：华为运动健康风格的周/月/年减排趋势 */
+/** 竖向柱状图： */
 @Component
 export struct TrendBarChart {
   @Prop @Watch('redraw') points: ChartPoint[] = [];

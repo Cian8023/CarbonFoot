@@ -53,7 +53,11 @@ export struct HistoryView {
     this.refresh();
   }
 
+  /** 刷新序号：并发调用时只采纳最后一次的结果，避免旧查询覆盖新数据 */
+  private refreshSeq: number = 0;
+
   async refresh(): Promise<void> {
+    const seq = ++this.refreshSeq;
     try {
       await AppInit.ensure();
       const now = Date.now();
@@ -76,7 +80,13 @@ export struct HistoryView {
           start = 0;
         }
       }
-      this.rawRecords = await BehaviorRepo.query(start, end, this.typeFilter);
+      const rows = await BehaviorRepo.query(start, end, this.typeFilter);
+      // 并发保护：若期间又触发了更新的一次 refresh，本次结果作废，
+      // 否则先发出的慢查询会覆盖后发出的快查询，界面停在旧数据
+      if (seq !== this.refreshSeq) {
+        return;
+      }
+      this.rawRecords = rows;
       // 子类型对比直接复用本次区间查询结果，不再额外全表扫描
       this.bars = StatsService.subShare(this.rawRecords, 0);
       this.applyFilter();
@@ -600,7 +610,7 @@ export struct HistoryView {
             }, (r: BehaviorRecord) => '' + r.id + '_' + r.note + '_' + r.value)
           }
           .width('100%')
-        }, (g: RecordGroup) => g.label + '#' + g.items.length)
+        }, (g: RecordGroup) => g.label + '#' + g.items.map((r: BehaviorRecord) => '' + r.id + '_' + r.value + '_' + r.reductionG).join(','))
       }
       .width('100%')
       .padding({ left: 14, right: 14 })

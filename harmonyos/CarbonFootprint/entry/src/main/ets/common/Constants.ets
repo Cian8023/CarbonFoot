@@ -36,9 +36,18 @@ export class Constants {
   }
 }
 
-/** 数据变化后调用，各页面监听该事件刷新 */
+/**
+ * 数据变化后调用，各页面监听该事件刷新。
+ *
+ * 用单调递增计数而非 Date.now()：连续两次写入若落在同一毫秒，
+ * 时间戳相同，@StorageLink 认为值未变，@Watch 不触发，页面停在旧数据。
+ * 改为计数后每次写入必然变化，不会漏刷新。
+ */
+let tickCounter: number = 0;
+
 export function bumpTick(): void {
-  AppStorage.setOrCreate(Constants.KEY_TICK, Date.now());
+  tickCounter += 1;
+  AppStorage.setOrCreate(Constants.KEY_TICK, tickCounter);
 }
 
 /** 跳转到主 Tab 的指定页 */

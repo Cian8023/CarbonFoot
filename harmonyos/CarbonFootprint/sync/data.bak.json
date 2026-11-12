@@ -1,22 +1,35 @@
 {
-  "CF928921": {
-    "createdAt": 1793608471686,
+  "CF952298": {
+    "createdAt": 1793696906081,
     "members": {
-      "dev-mvz06b70-dd5": {
-        "deviceId": "dev-mvz06b70-dd5",
+      "dev-mw0gt4j0-9frv": {
+        "deviceId": "dev-mw0gt4j0-9frv",
         "name": "我的设备",
-        "totalG": 14088,
-        "balance": 184,
-        "weekG": 8460,
-        "updatedAt": 1793610400137
+        "totalG": 15004,
+        "balance": 163,
+        "weekG": 4010,
+        "updatedAt": 1793703040790
+      }
+    }
+  },
+  "CF321219": {
+    "createdAt": 1793956908217,
+    "members": {
+      "dev-mw4r8op2-8red": {
+        "deviceId": "dev-mw4r8op2-8red",
+        "name": "我的设备",
+        "totalG": 2700,
+        "balance": 37,
+        "weekG": 2700,
+        "updatedAt": 1793956975474
       },
       "dev-mvz03ljp-a7sl": {
         "deviceId": "dev-mvz03ljp-a7sl",
-        "name": "yy",
-        "totalG": 0,
-        "balance": 0,
-        "weekG": 0,
-        "updatedAt": 1793609312083
+        "name": "1111",
+        "totalG": 397275,
+        "balance": 3975,
+        "weekG": 394855,
+        "updatedAt": 1793957048721
       }
     }
   }

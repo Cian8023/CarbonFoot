@@ -56,9 +56,17 @@ export class BehaviorService {
     }
 
     // 先评估任务达标，再统一检测徽章（单次调用覆盖行为与任务两类触发，动画名单完整）
-    await TaskService.evaluateAll();
-    const newBadges: string[] = await BadgeService.checkAll();
-    bumpTick();
+    // 事务已提交，无论后续判定是否抛异常都必须刷新界面，避免"已入库但界面不更新"
+    const newBadges: string[] = [];
+    try {
+      await TaskService.evaluateAll();
+      const badges = await BadgeService.checkAll();
+      for (const b of badges) {
+        newBadges.push(b);
+      }
+    } finally {
+      bumpTick();
+    }
     // 已加入家庭组的话，异步把最新快照推给同步服务（800ms 内合并，失败静默）
     SyncService.scheduleReport();
     const result: SubmitResult = {
@@ -90,8 +98,10 @@ export class BehaviorService {
     } catch (e) {
       DBHelper.rollbackTx();
       throw e as Error;
+    } finally {
+      // 提交成功要刷新；回滚虽无数据变化，刷新一次也无副作用
+      bumpTick();
     }
-    bumpTick();
   }
 
   static async updateNote(id: number, note: string): Promise<void> {
@@ -145,8 +155,13 @@ export class BehaviorService {
       DBHelper.rollbackTx();
       throw e as Error;
     }
-    // 数值调大可能让任务新达标：事务外补发（evaluateAll 自带事务，不可嵌套）
-    await TaskService.evaluateAll();
-    bumpTick();
+    // 事务已提交，数据确定落库。后续 evaluateAll 若抛异常（任务判定依赖外部数据）
+    // 也必须发出刷新通知，否则界面停在旧数据而库里已是新值，用户以为"保存没生效"。
+    try {
+      // 数值调大可能让任务新达标：事务外补发（evaluateAll 自带事务，不可嵌套）
+      await TaskService.evaluateAll();
+    } finally {
+      bumpTick();
+    }
   }
 }
