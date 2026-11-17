@@ -22,7 +22,20 @@
 *.har
 
 # ================= ArkUI-X 生成的 Android 原生工程 =================
-**/.arkui-x
+# 整体忽略 .arkui-x（含 SDK 拷贝、so、资源产物等），但放行手工维护的壳工程源码。
+# 这些文件是白屏修复（setInstanceName）与 Bridge 多机型适配的关键，必须入库。
+**/.arkui-x/**
+!**/.arkui-x/android/
+!**/.arkui-x/android/app/
+!**/.arkui-x/android/app/src/
+!**/.arkui-x/android/app/src/main/
+!**/.arkui-x/android/app/src/main/java/
+!**/.arkui-x/android/app/src/main/java/*.java
+!**/.arkui-x/android/app/src/main/AndroidManifest.xml
+!**/.arkui-x/android/app/build.gradle
+!**/.arkui-x/android/app/src/main/res/
+!**/.arkui-x/android/app/src/main/res/values/
+!**/.arkui-x/android/app/src/main/res/values/*.xml
 
 # ================= Android / Gradle 构建产物 =================
 **/.gradle
@@ -82,6 +95,9 @@ Thumbs.db
 *.keystore
 **/signature
 **/.ohos
+# 含明文 keyPassword/storePassword 与本机证书路径，仅保留脱敏模板入库
+**/build-profile.json5
+!**/build-profile.example.json5
 
 # ================= AI 协作元数据 =================
 .workbuddy-ai
@@ -92,6 +108,7 @@ Thumbs.db
 *.bak
 build.log
 ffmpeg2pass-*
+.push-worktree-backup
 **/.cache
 
 # ================= 文档中间产物 =================

@@ -17,6 +17,7 @@ const SOURCES: string[] = ['全部', 'behavior', 'task', 'read', 'exchange'];
 
 @Component
 export struct TasksView {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tasksSegment') @Watch('refresh') segment: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State tasks: TaskProgress[] = [];
@@ -431,7 +432,7 @@ export struct TasksView {
         .fontSize(Theme.FS_HERO)
         .fontWeight(FontWeight.Bold)
         .width('100%')
-        .padding({ left: 14, top: 14 })
+        .padding({ left: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       // 余额 + 徽章入口
       Row({ space: 10 }) {

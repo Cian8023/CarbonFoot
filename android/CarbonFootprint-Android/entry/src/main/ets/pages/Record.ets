@@ -12,6 +12,7 @@ import { BadgeUnlockOverlay } from '../components/BadgeUnlock';
 
 @Component
 export struct RecordView {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('onDataTick') tick: number = 0;
   @State categories: BehaviorCategory[] = [];
   @State selType: string = '';
@@ -341,7 +342,7 @@ export struct RecordView {
         .borderWidth(1).borderColor(Theme.CARD_BORDER)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14, bottom: 76 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14, bottom: 76 })
     }
     .scrollBar(BarState.Off)
     .width('100%')

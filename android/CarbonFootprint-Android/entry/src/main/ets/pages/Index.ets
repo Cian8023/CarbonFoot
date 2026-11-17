@@ -84,6 +84,8 @@ struct Index {
 }
 @Component
 struct HomeView {
+  // 沉浸式状态下，内容需自行避让状态栏。px 值由 EntryAbility 写入。
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State loading: boolean = true;
   @State todayG: number = 0;
@@ -856,6 +858,8 @@ struct HomeView {
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
       // 顶部浅绿晕染：给标题区一点颜色，不抢白卡
+      // expandSafeArea 让其延伸到状态栏底部，配合沉浸式状态栏，
+      // 状态栏区域显示渐变色而非黑色，顶部圆角/渐变完整显示。
       Column()
         .width('100%')
         .height(190)
@@ -863,6 +867,7 @@ struct HomeView {
           angle: 180,
           colors: [['#EFEBDF', 0.0], ['#F5F2E9', 0.62], [Theme.BG, 1.0]]
         })
+        .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       Scroll() {
         Column({ space: 12 }) {
@@ -933,7 +938,12 @@ struct HomeView {
         }
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 8, bottom: 14 })
+      .padding({
+        left: 14,
+        right: 14,
+        top: px2vp(this.statusBarHeightPx) + 8,
+        bottom: 14
+      })
     }
     .scrollBar(BarState.Off)
     .width('100%')

@@ -27,6 +27,7 @@ interface BatchItem {
 @Entry
 @Component
 struct AiRecognize {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State recognizing: boolean = false;
   /** 批量识别进度文案（如「正在识别 3/9」），单张识别时为空 */
   @State batchProgress: string = '';
@@ -432,7 +433,7 @@ struct AiRecognize {
           })
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       Scroll() {
         Column({ space: 14 }) {

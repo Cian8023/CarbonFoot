@@ -18,6 +18,7 @@ import { EmptyState } from '../components/EmptyState';
 @Entry
 @Component
 struct AnnualReport {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State year: number = new Date().getFullYear();
   @State totalG: number = 0;
   @State recordCount: number = 0;
@@ -319,7 +320,7 @@ struct AnnualReport {
           .width(22)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14, bottom: 10 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14, bottom: 10 })
 
       if (!this.loaded) {
         Column()

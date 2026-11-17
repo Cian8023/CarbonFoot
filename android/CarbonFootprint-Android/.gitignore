@@ -17,9 +17,21 @@
 *.har
 
 # ---------- ArkUI-X 生成的 Android 原生工程 ----------
-# ace build 自动生成，含 libs/*.so（约 120M）与 build 目录
-# 完全可重建，绝不提交
-/.arkui-x
+# ace build 自动生成，含 libs/*.so（约 120M）与 build 目录，整体忽略。
+# 但手工维护的壳工程源码必须入库：白屏修复(setInstanceName)、Bridge 多机型适配
+# 都依赖这些文件，缺失会导致别人拉取后重新白屏。
+/.arkui-x/**
+!/.arkui-x/android/
+!/.arkui-x/android/app/
+!/.arkui-x/android/app/src/
+!/.arkui-x/android/app/src/main/
+!/.arkui-x/android/app/src/main/java/
+!/.arkui-x/android/app/src/main/java/*.java
+!/.arkui-x/android/app/src/main/AndroidManifest.xml
+!/.arkui-x/android/app/build.gradle
+!/.arkui-x/android/app/src/main/res/
+!/.arkui-x/android/app/src/main/res/values/
+!/.arkui-x/android/app/src/main/res/values/*.xml
 
 # ---------- Android / Gradle ----------
 /.gradle

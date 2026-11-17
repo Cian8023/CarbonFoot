@@ -30,6 +30,7 @@ function agoText(ts: number): string {
 @Entry
 @Component
 struct Family {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State groupCode: string = '';
   @State hasGroup: boolean = false;
   @State members: FamilyMember[] = [];
@@ -179,7 +180,7 @@ struct Family {
           .width(22)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       Scroll() {
         Column({ space: 12 }) {

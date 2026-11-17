@@ -22,6 +22,7 @@ export interface RecordGroup {
 
 @Component
 export struct HistoryView {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State records: BehaviorRecord[] = [];
   @State rawRecords: BehaviorRecord[] = [];
@@ -441,7 +442,7 @@ export struct HistoryView {
         .fontSize(Theme.FS_HERO)
         .fontWeight(FontWeight.Bold)
         .width('100%')
-        .padding({ left: 14, top: 14 })
+        .padding({ left: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       // 筛选
       Column({ space: 10 }) {

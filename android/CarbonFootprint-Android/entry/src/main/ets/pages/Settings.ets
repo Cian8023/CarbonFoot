@@ -13,6 +13,7 @@ import { EcoUtil } from '../utils/EcoUtil';
 
 @Component
 export struct MineView {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State nickname: string = '绿色生活家';
   @State editing: boolean = false;
@@ -310,7 +311,7 @@ export struct MineView {
         .padding(6)
       }
       .width('100%')
-      .padding(14)
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14, bottom: 14 })
     }
     .scrollBar(BarState.Off)
     .width('100%')

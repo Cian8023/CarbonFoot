@@ -17,6 +17,7 @@ import { DateUtil } from '../utils/DateUtil';
 @Entry
 @Component
 struct Badges {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State badges: BadgeDef[] = [];
   @State balance: number = 0;
@@ -296,6 +297,7 @@ struct Badges {
       }
       .width('100%')
       .height(52)
+      .margin({ top: px2vp(this.statusBarHeightPx) })
       .padding({ left: 14, right: 14 })
       .border({ width: { bottom: 1 }, color: Theme.DIVIDER_LIGHT })
 

@@ -20,6 +20,7 @@ import picker from '@ohos.file.picker';
 @Entry
 @Component
 struct SettingsDetail {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State monthGoalInput: string = '30';
   @State homeLayout: string[] = [];
   @State hiddenCards: string[] = [];
@@ -361,7 +362,7 @@ struct SettingsDetail {
             .width(22)
         }
         .width('100%')
-        .padding({ left: 14, right: 14, top: 14, bottom: 8 })
+        .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14, bottom: 8 })
 
         Scroll(this.scroller) {
           Column({ space: 12 }) {

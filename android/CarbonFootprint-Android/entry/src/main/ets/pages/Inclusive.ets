@@ -13,6 +13,7 @@ import { DateUtil } from '../utils/DateUtil';
 @Entry
 @Component
 struct Inclusive {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State benefits: Benefit[] = [];
   @State entitlements: Entitlement[] = [];
   @State balance: number = 0;
@@ -91,7 +92,7 @@ struct Inclusive {
           .width(22)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       Scroll() {
         Column({ space: 12 }) {

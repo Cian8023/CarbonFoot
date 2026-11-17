@@ -10,6 +10,7 @@ const CATEGORIES: string[] = ['全部', '政策解读', '生活技巧', '行业�
 @Entry
 @Component
 struct Knowledge {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @StorageLink('tick') @Watch('refresh') tick: number = 0;
   @State articles: Article[] = [];
   @State category: string = '全部';
@@ -58,7 +59,7 @@ struct Knowledge {
           .width(22)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       // 分类筛选
       Row({ space: 8 }) {

@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\27544\\.ohos\\config\\default_CarbonFootprint_3y1RcD6o09de8ZJ-axX2lob4yXUqeoCUgEFA8ZYaU2Q=.cer",
+          "certpath": "<本机证书路径>/default_xxx.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A891E2AC07B1C50C321AF3F07B14BB696D725230C6CEA9156609D5C1BBDA510AEB1E947D3D809",
-          "profile": "C:\\Users\\27544\\.ohos\\config\\default_CarbonFootprint_3y1RcD6o09de8ZJ-axX2lob4yXUqeoCUgEFA8ZYaU2Q=.p7b",
+          "keyPassword": "<keyPassword>",
+          "profile": "<本机证书路径>/default_xxx.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\27544\\.ohos\\config\\default_CarbonFootprint_3y1RcD6o09de8ZJ-axX2lob4yXUqeoCUgEFA8ZYaU2Q=.p12",
-          "storePassword": "0000001AE3D5AD60E094EF3FD8B2BFD7437DF08AC02811D1AFC71D4ACFF36EE9E58EE7658C6A2B70AA41"
+          "storeFile": "<本机证书路径>/default_xxx.p12",
+          "storePassword": "<storePassword>"
         }
       }
     ],

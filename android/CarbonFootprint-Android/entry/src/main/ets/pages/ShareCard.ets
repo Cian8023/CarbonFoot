@@ -19,6 +19,7 @@ import { PrefsService } from '../common/PrefsService';
 @Entry
 @Component
 struct ShareCard {
+  @StorageProp('statusBarHeightPx') statusBarHeightPx: number = 0;
   @State todayKg: string = '0.00';
   @State totalKg: string = '0.00';
   @State totalG: number = 0;
@@ -147,7 +148,7 @@ struct ShareCard {
           .width(22)
       }
       .width('100%')
-      .padding({ left: 14, right: 14, top: 14 })
+      .padding({ left: 14, right: 14, top: px2vp(this.statusBarHeightPx) + 14 })
 
       Column({ space: 16 }) {
         Canvas(this.ctx)
