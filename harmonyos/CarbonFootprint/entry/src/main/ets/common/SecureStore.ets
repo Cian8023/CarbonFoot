@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import asset from '@ohos.security.asset';
 import util from '@ohos.util';
 

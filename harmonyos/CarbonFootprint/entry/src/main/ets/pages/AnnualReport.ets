@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import router from '@ohos.router';
 import { AppInit } from '../common/AppInit';
 import { Constants } from '../common/Constants';

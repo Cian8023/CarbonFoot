@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 /**
  * 勋章解锁全屏动画层：
  * 金色徽章弹性放大 + 光环扩散 + 徽章名展示，点击任意处关闭。

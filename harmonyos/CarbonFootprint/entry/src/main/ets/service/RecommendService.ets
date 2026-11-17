@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import { BehaviorRepo, TaskCheckUtil } from '../db/Repository';
 import { TaskService } from './TaskService';
 import { DateUtil } from '../utils/DateUtil';
