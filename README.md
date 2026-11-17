@@ -51,6 +51,14 @@ adb install -r app-debug.apk
 
 用 DevEco Studio 打开 `harmonyos/CarbonFootprint/` 即可。
 
+## 版权与许可
+
+本项目由 **Cian8023** 开发，**以 Apache License 2.0 开源**（详见仓库根目录 [LICENSE](./LICENSE)）。
+
+- 所有源码文件头部均带有 `Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0` 权属声明，请保留。
+- 依据 Apache-2.0：你可以自由使用、修改、分发，但**须保留版权与许可声明，并在修改过的文件中注明变更**。
+- 版权头是权属声明与法律凭据，用于确立作者身份、防止恶意窃取署名；它不构成技术层面的复制限制。
+
 ## 配置说明
 
 仓库中带 `example` 的模板文件需按本机环境复制填写，真实配置不入库：

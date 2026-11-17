@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import { HttpClient } from '../network/HttpClient';
 import { AppConfig } from '../common/AppConfig';
 import { CalculationService } from './CalculationService';

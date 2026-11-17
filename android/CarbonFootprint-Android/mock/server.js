@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 /**
  * 碳足迹 · 城市碳普惠 Mock 服务
  * ------------------------------------------------------------

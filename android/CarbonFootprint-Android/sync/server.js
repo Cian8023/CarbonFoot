@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 /**
  * 家庭碳账户 · 本地同步服务（E1 多端同步）
  *

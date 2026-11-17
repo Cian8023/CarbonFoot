@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import { DBHelper } from '../db/DBHelper';
 import { BehaviorRepo } from '../db/Repository';
 import { PointsService } from './PointsService';

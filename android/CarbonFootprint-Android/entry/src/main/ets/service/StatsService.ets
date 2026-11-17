@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Cian8023 · Licensed under Apache-2.0 */
 import { BehaviorRecord } from '../model/Models';
 import { ChartPoint, PieItem } from '../components/Chart';
 import { DateUtil } from '../utils/DateUtil';
