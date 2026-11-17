@@ -1,43 +1,80 @@
-# ---- 构建产物 ----
-/entry/build/
-/entry/.preview/
-/entry/.test/
-/.hvigor/
-/build/
+# ============================================================
+# 碳足迹 CarbonFootprint · HarmonyOS 主工程
+# 这是当前唯一活跃的 git 仓库
+# 说明：目录规则不带尾斜杠，避免目录删除后规则失效
+# ============================================================
+
+
+# ---------- 鸿蒙 / hvigor 构建产物 ----------
+/entry/build
+/entry/.preview
+/entry/.test
+/.hvigor
+/build
 *.hap
 *.hsp
 *.app
 *.har
 
-# ---- 依赖 ----
-node_modules/
-oh_modules/
-/entry/oh_modules/
+# ---------- ArkUI-X 跨平台产物 ----------
+# 若在本工程内执行 ace build，会生成此目录
+/.arkui-x
 
-# ---- IDE / 工具 ----
-.idea/
+# ---------- 依赖 ----------
+node_modules
+oh_modules
+/entry/oh_modules
+/.ohpm
+
+# ---------- SDK / 工具链 ----------
+# 本机工具链目录（正常不在此工程内，防御性忽略）
+SDK
+arkui-x-sdk-26
+
+# ---------- IDE / 编辑器 ----------
+.idea
 *.iml
+*.swp
+*.swo
+*~
 .DS_Store
 Thumbs.db
+.vscode
 
-# ---- 本机配置（含 SDK 路径，不应提交） ----
+# ---------- 本机配置（含 SDK 绝对路径，不应提交） ----------
 local.properties
 /.clangd
 /.clang-format
 /.clang-tidy
 
-# ---- AI 协作元数据 ----
-.workbuddy-ai/
+# ---------- 签名材料（密钥，绝不提交） ----------
+*.p12
+*.cer
+*.p7b
+*.jks
+*.keystore
+/entry/signature
+/.ohos
 
-# ---- 文档中间产物与 QA 副产物 ----
-/output/
-/ppt/
+# ---------- AI 协作元数据 ----------
+.workbuddy-ai
 
-# ---- 日志与临时文件 ----
+# ---------- 文档中间产物与 QA 副产物 ----------
+/output
+/ppt
+
+# ---------- 日志与临时文件 ----------
 *.log
 *.tmp
 *.bak
 build.log
+ffmpeg2pass-*
+/.cache
 
-# ---- 本地服务运行时数据 ----
+# ---------- 本地服务运行时数据 ----------
 /sync/data.json
+
+# ---------- 测试与覆盖率 ----------
+/testResults
+coverage
+*.lcov
