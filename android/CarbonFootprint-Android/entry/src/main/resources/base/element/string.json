@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "碳足迹主模块"
+    },
+    {
+      "name": "perm_internet",
+      "value": "用于连接碳普惠平台与 AI 识别接口"
+    },
+    {
+      "name": "ability_desc",
+      "value": "碳足迹应用入口"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "碳足迹"
+    }
+  ]
+}

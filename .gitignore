@@ -1,0 +1,106 @@
+# ============================================================
+# 碳足迹项目 · 统一 .gitignore
+# 位置：D:\aaaa\CarbonFoot\.gitignore （仓库根）
+#
+# 仓库结构（结构 A：分目录并列）
+#   main 分支    → harmonyos/CarbonFootprint/       鸿蒙工程
+#   android 分支 → android/CarbonFootprint-Android/  Android 工程
+#
+# 说明：目录规则一律不带尾斜杠，避免目录删除后规则失效
+# ============================================================
+
+
+# ================= 鸿蒙 / hvigor 构建产物 =================
+**/entry/build
+**/entry/.preview
+**/entry/.test
+**/.hvigor
+**/build
+*.hap
+*.hsp
+*.app
+*.har
+
+# ================= ArkUI-X 生成的 Android 原生工程 =================
+**/.arkui-x
+
+# ================= Android / Gradle 构建产物 =================
+**/.gradle
+**/gradle-wrapper.jar
+**/gradle-wrapper.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+**/outputs
+**/intermediates
+captures
+.externalNativeBuild
+.cxx
+
+# ================= 依赖目录 =================
+node_modules
+**/oh_modules
+**/oh-package-lock.json5
+**/.ohpm
+
+# ================= SDK / 工具链（体积巨大，绝不提交） =================
+# 这些是本机环境，不属于源码
+/harmonyos/SDK
+/harmonyos/oh-sdk
+/harmonyos/hos-sdk
+/harmonyos/ace-hos-sdk
+/android/android-sdk
+/android/arkui-x-sdk-26
+
+# ================= 成品安装包 =================
+/android/APK
+
+# ================= git 历史备份 =================
+# 迁移时用 git bundle 备份的旧仓库，体积大且不属于源码
+.history-backup
+*.bundle
+
+# ================= IDE / 编辑器 =================
+.idea
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.vscode
+
+# ================= 本机配置与签名材料 =================
+# 含绝对路径、证书、密钥，提交会造成路径失效和密钥泄露
+**/local.properties
+*.p12
+*.cer
+*.p7b
+*.jks
+*.keystore
+**/signature
+**/.ohos
+
+# ================= AI 协作元数据 =================
+.workbuddy-ai
+
+# ================= 日志与临时文件 =================
+*.log
+*.tmp
+*.bak
+build.log
+ffmpeg2pass-*
+**/.cache
+
+# ================= 文档中间产物 =================
+/output
+/ppt
+**/sync/data.json
+
+# ================= 测试与覆盖率 =================
+**/testResults
+**/reports
+*.lcov
+coverage

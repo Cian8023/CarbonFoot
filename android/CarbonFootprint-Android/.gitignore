@@ -1,0 +1,93 @@
+# ============================================================
+# CarbonFootprint-Android · ArkUI-X 跨平台工程
+# 注意：这是 ArkUI-X 工程（hvigor 构建），不是标准 Android 工程
+# 说明：目录规则不带尾斜杠，避免目录删除后规则失效
+# ============================================================
+
+
+# ---------- 鸿蒙 / hvigor 构建产物 ----------
+/entry/build
+/entry/.preview
+/entry/.test
+/.hvigor
+/build
+*.hap
+*.hsp
+*.app
+*.har
+
+# ---------- ArkUI-X 生成的 Android 原生工程 ----------
+# ace build 自动生成，含 libs/*.so（约 120M）与 build 目录
+# 完全可重建，绝不提交
+/.arkui-x
+
+# ---------- Android / Gradle ----------
+/.gradle
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+captures
+.externalNativeBuild
+.cxx
+
+# ---------- 依赖 ----------
+node_modules
+oh_modules
+/entry/oh_modules
+/.ohpm
+
+# ---------- SDK / 工具链（本机路径，体积巨大） ----------
+android-sdk
+arkui-x-sdk-26
+SDK
+
+# ---------- 成品安装包 ----------
+APK
+*.apk
+
+# ---------- IDE / 编辑器 ----------
+.idea
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.vscode
+
+# ---------- 本机配置与签名材料 ----------
+local.properties
+/.clangd
+/.clang-format
+/.clang-tidy
+*.p12
+*.cer
+*.p7b
+*.jks
+*.keystore
+/entry/signature
+/.ohos
+
+# ---------- AI 协作元数据 ----------
+.workbuddy-ai
+
+# ---------- 文档中间产物 ----------
+/output
+/ppt
+/sync/data.json
+
+# ---------- 日志与临时文件 ----------
+*.log
+*.tmp
+*.bak
+build.log
+ffmpeg2pass-*
+/.cache
+
+# ---------- 测试与覆盖率 ----------
+/testResults
+/reports
+coverage
+*.lcov
