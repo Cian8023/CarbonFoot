@@ -626,7 +626,8 @@ export struct HistoryView {
             : `未找到包含「${this.keyword.trim()}」的记录，换个关键词试试`,
           buttonText: '去记录',
           onButton: (): void => {
-            AppStorage.setOrCreate('mainTab', 1);
+            // 跳转到录入页（新顺序下 TAB_RECORD = 2）
+            AppStorage.setOrCreate('mainTab', 2);
           }
         })
       }

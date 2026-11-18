@@ -12,11 +12,11 @@ export class Constants {
   // 植树证书兑换所需积分
   static readonly CERT_COST: number = 2000;
 
-  // 主页面 Tab 序号
+  // 主页面 Tab 序号：首页 / 任务 / 录入 / 历史 / 我的
   static readonly TAB_HOME: number = 0;
-  static readonly TAB_RECORD: number = 1;
-  static readonly TAB_HISTORY: number = 2;
-  static readonly TAB_TASKS: number = 3;
+  static readonly TAB_TASKS: number = 1;
+  static readonly TAB_RECORD: number = 2;
+  static readonly TAB_HISTORY: number = 3;
   static readonly TAB_MINE: number = 4;
 
   // AppStorage Key

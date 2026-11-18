@@ -55,6 +55,11 @@ struct Index {
       .tabBar(this.tabItem('首页', $r('sys.symbol.house'), Constants.TAB_HOME))
 
       TabContent() {
+        TasksView()
+      }
+      .tabBar(this.tabItem('任务', $r('sys.symbol.calendar'), Constants.TAB_TASKS))
+
+      TabContent() {
         RecordView()
       }
       .tabBar(this.tabItem('录入', $r('sys.symbol.plus'), Constants.TAB_RECORD))
@@ -63,11 +68,6 @@ struct Index {
         HistoryView()
       }
       .tabBar(this.tabItem('历史', $r('sys.symbol.clock'), Constants.TAB_HISTORY))
-
-      TabContent() {
-        TasksView()
-      }
-      .tabBar(this.tabItem('任务', $r('sys.symbol.calendar'), Constants.TAB_TASKS))
 
       TabContent() {
         MineView()
